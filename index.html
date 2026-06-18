@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>산타 일정</title>
+<title>santa-tracker</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
   :root {
     --bg:#FFFFFF; --surface:#FFFFFF; --surface2:#F2F2F7;
     --border:rgba(0,0,0,0.08); --border-strong:rgba(0,0,0,0.11);
-    --text:#1C1C1E; --text3:#8E8E93; --accent:#F6CDE1;
+    --text:#1C1C1E; --text3:#8E8E93; --accent:#007AFF;
     --concert:#A8D1F0; --concert-bg:#EAF4FC;
     --release:#D4E89A; --release-bg:#F5F7E8;
     --green:#34C759; --check:#D9ED92; --red:#FF3B30; --red-bg:rgba(255,59,48,0.10);
@@ -61,7 +61,7 @@
     transition:background 0.12s,color 0.12s;
   }
   .f-tab:active{opacity:0.6}
-  .f-tab.active{background:var(--accent);color:#fff}
+  .f-tab.active{background:transparent;color:var(--text);border:1px solid var(--border-strong)}
 
   /* ── content ── */
   .content{padding-top:92px;padding-bottom:calc(28px + var(--safe-bottom))}
@@ -102,17 +102,17 @@
 
   .d-chip{font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;background:var(--surface2);color:var(--text3);white-space:nowrap;text-align:center;min-width:30px}
   .d-chip.soon{background:var(--red-bg);color:var(--red)}
-  .d-chip.dday{background:var(--accent);color:#fff}
+  .d-chip.dday{background:#fff;color:var(--text);border:0.5px solid var(--border-strong)}
   .d-chip.past{opacity:0.38}
 
   .check-circle{
     width:15px;height:15px;border-radius:50%;
-    border:0.75px solid var(--border-strong);background:transparent;
+    border:0.75px solid #C8C8C8;background:transparent;
     cursor:pointer;display:flex;align-items:center;justify-content:center;
     transition:all 0.13s;flex-shrink:0;
   }
   .check-circle:active{transform:scale(0.82)}
-  .check-circle.going{background:#D9ED92;border-color:#B5CC5A}
+  .check-circle.going{background:#E8E8E8;border-color:#B0B0B0}
   .check-circle svg{opacity:0;transition:opacity 0.1s}
   .check-circle.going svg{opacity:1}
   .check-placeholder{width:15px;height:15px;flex-shrink:0}
@@ -138,7 +138,7 @@
 
 <header class="header">
   <div class="header-row">
-    <span class="header-title">산타 일정</span>
+    <span class="header-title">santa-tracker</span>
     <div class="search-wrap" id="searchWrap">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
         <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
@@ -269,7 +269,7 @@ function renderCard(e){
   const isGoing = attended[e.id] === 'going';
 
   let cc='d-chip', ct='';
-  if(days===0)             { cc='d-chip dday'; ct='D-DAY'; }
+  if(days===0)             { cc='d-chip dday'; ct='🎉'; }
   else if(days>0&&days<=7) { cc='d-chip soon'; ct=`D-${days}`; }
   else if(days>0)          {                   ct=`D-${days}`; }
   else                     { cc='d-chip past'; ct='종료'; }
@@ -289,7 +289,7 @@ function renderCard(e){
   const checkEl = isCon
     ? `<div class="check-circle${isGoing?' going':''}" onclick="toggleGoing('${e.id}',event)">
         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-          <path d="M1 4l2 2 4-4" stroke="#5C7A1A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1 4l2 2 4-4" stroke="#888" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>`
     : `<div class="check-placeholder"></div>`;
