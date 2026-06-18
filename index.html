@@ -10,8 +10,8 @@
     --bg:#FFFFFF; --surface:#FFFFFF; --surface2:#F2F2F7;
     --border:rgba(0,0,0,0.08); --border-strong:rgba(0,0,0,0.11);
     --text:#1C1C1E; --text3:#8E8E93; --accent:#007AFF;
-    --concert:#007AFF; --concert-bg:rgba(0,122,255,0.10);
-    --release:#AF52DE; --release-bg:rgba(175,82,222,0.10);
+    --concert:#5BA8D4; --concert-bg:#A8D1F0;
+    --release:#8A9A2E; --release-bg:#F1F0C8;
     --green:#34C759; --red:#FF3B30; --red-bg:rgba(255,59,48,0.10);
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
     --safe-top:env(safe-area-inset-top,0px);
@@ -21,7 +21,7 @@
     --bg:#000; --surface:#1C1C1E; --surface2:#2C2C2E;
     --border:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.11);
     --text:#FFF; --text3:#8E8E93;
-    --concert-bg:rgba(0,122,255,0.15); --release-bg:rgba(175,82,222,0.15);
+    --concert-bg:rgba(168,209,240,0.2); --release-bg:rgba(241,240,200,0.2);
     --red-bg:rgba(255,59,48,0.13);
   }}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -45,7 +45,7 @@
 
   .search-wrap{
     display:flex;align-items:center;background:var(--surface2);
-    border-radius:9px;padding:0 9px;gap:6px;height:30px;width:120px;
+    border-radius:20px;padding:0 11px;gap:6px;height:30px;width:120px;
     transition:width 0.2s ease;
   }
   .search-wrap.focused{width:170px}
@@ -90,15 +90,16 @@
     font-size:10px;font-weight:600;width:28px;text-align:center;
     padding:2px 0;border-radius:4px;flex-shrink:0;
   }
-  .pill-concert{background:var(--concert-bg);color:var(--concert)}
-  .pill-release{background:var(--release-bg);color:var(--release)}
+  .pill-concert{background:var(--concert-bg);color:#3A7FA8}
+  .pill-release{background:var(--release-bg);color:#5C6B1A}
 
-  .card-artist{font-size:11px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .card-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.25;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card-artist{font-size:10px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.35;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-meta{display:flex;gap:8px;overflow:hidden}
-  .meta-item{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--text3);white-space:nowrap}
+  .meta-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);white-space:nowrap}
 
-  .card-right{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;width:34px}
+  /* right col: d-chip top, checkbox bottom with more gap */
+  .card-right{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14px 0;flex-shrink:0;width:34px}
 
   .d-chip{font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;background:var(--surface2);color:var(--text3);white-space:nowrap;text-align:center;min-width:30px}
   .d-chip.soon{background:var(--red-bg);color:var(--red)}
@@ -263,10 +264,10 @@ function renderCard(e){
   const isGoing = attended[e.id] === 'going';
 
   let cc='d-chip', ct='';
-  if(days===0)              { cc='d-chip dday'; ct='D-DAY'; }
-  else if(days>0&&days<=14) { cc='d-chip soon'; ct=`D-${days}`; }
-  else if(days>0)           {                   ct=`D-${days}`; }
-  else                      { cc='d-chip past'; ct='종료'; }
+  if(days===0)             { cc='d-chip dday'; ct='D-DAY'; }
+  else if(days>0&&days<=7) { cc='d-chip soon'; ct=`D-${days}`; }
+  else if(days>0)          {                   ct=`D-${days}`; }
+  else                     { cc='d-chip past'; ct='종료'; }
 
   const timeStr = fmtTime(e.time);
   const dateMeta = `<span class="meta-item">
