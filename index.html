@@ -95,14 +95,14 @@
   .card-artist{font-size:10px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .card-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.35;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-meta{display:flex;gap:8px;overflow:hidden}
-  .meta-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);white-space:nowrap;line-height:1}
-  .meta-item svg{flex-shrink:0;position:relative;top:0.5px}
+  .meta-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);white-space:nowrap;line-height:1;position:relative;top:1px}
+  .meta-item svg{flex-shrink:0}
 
   /* right col: d-chip top, checkbox bottom with more gap */
   .card-right{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0 12px;flex-shrink:0;width:34px;min-height:72px}
 
   .d-chip{font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;background:var(--surface2);color:var(--text3);white-space:nowrap;text-align:center;min-width:30px}
-  .d-chip.soon{background:var(--red-bg);color:var(--red)}
+  .d-chip.soon{background:#FEF0EF;color:#E07070}
   .d-chip.dday{background:#fff;color:var(--text);border:0.5px solid var(--border-strong)}
   .d-chip.past{opacity:0.38}
 
@@ -248,8 +248,8 @@ function getFiltered(){
     if(q && !e.artist.toLowerCase().includes(q) && !e.title.toLowerCase().includes(q)) return false;
     return true;
   }).sort((a,b)=>{
-    // 지난 일정은 최신순
-    if(curFilter === 'archive') return new Date(b.date) - new Date(a.date);
+    // 지난 일정은 오래된 순
+    if(curFilter === 'archive') return new Date(a.date) - new Date(b.date);
     return new Date(a.date) - new Date(b.date);
   });
 }
