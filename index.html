@@ -25,19 +25,9 @@
     --red-bg:rgba(255,59,48,0.13);
   }}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{
-    font-family:var(--font);background:var(--bg);color:var(--text);
-    -webkit-font-smoothing:antialiased;
-  }
+  html,body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 
-  /* ── center wrapper ── */
-  .wrap{
-    max-width:430px;
-    margin:0 auto;
-    min-height:100vh;
-    background:var(--bg);
-    position:relative;
-  }
+  .wrap{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
 
   /* ── header ── */
   .header{
@@ -82,22 +72,18 @@
   }
   .event-list{display:flex;flex-direction:column;gap:8px;padding:0 20px}
 
-  /* ── card — fixed 72px height ── */
+  /* ── card — fixed height ── */
   .event-card{
     height:72px;background:var(--surface);
     border-radius:12px;border:0.5px solid var(--border-strong);overflow:hidden;
   }
-  .card-inner{
-    display:flex;align-items:center;
-    height:100%;padding:0 14px 0 12px;gap:11px;
-  }
+  .card-inner{display:flex;align-items:center;height:100%;padding:0 14px 0 12px;gap:11px}
 
   .type-bar{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch}
   .bar-concert{background:var(--concert)}
   .bar-release{background:var(--release)}
 
   .card-info{flex:1;min-width:0;overflow:hidden}
-
   .card-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
 
   .type-pill{
@@ -107,31 +93,14 @@
   .pill-concert{background:var(--concert-bg);color:var(--concert)}
   .pill-release{background:var(--release-bg);color:var(--release)}
 
-  .card-artist{
-    font-size:11px;color:var(--text3);font-weight:500;
-    flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  }
-  .card-title{
-    font-size:14px;font-weight:600;color:var(--text);
-    letter-spacing:-0.2px;line-height:1.25;margin-bottom:3px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
+  .card-artist{font-size:11px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.25;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-meta{display:flex;gap:8px;overflow:hidden}
-  .meta-item{
-    display:flex;align-items:center;gap:3px;
-    font-size:11px;color:var(--text3);white-space:nowrap;
-  }
+  .meta-item{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--text3);white-space:nowrap}
 
-  /* ── right column ── */
-  .card-right{
-    display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:5px;flex-shrink:0;width:34px;
-  }
-  .d-chip{
-    font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;
-    background:var(--surface2);color:var(--text3);white-space:nowrap;
-    text-align:center;min-width:30px;
-  }
+  .card-right{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;width:34px}
+
+  .d-chip{font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;background:var(--surface2);color:var(--text3);white-space:nowrap;text-align:center;min-width:30px}
   .d-chip.soon{background:var(--red-bg);color:var(--red)}
   .d-chip.dday{background:var(--accent);color:#fff}
   .d-chip.past{opacity:0.38}
@@ -148,24 +117,10 @@
   .check-circle.going svg{opacity:1}
   .check-placeholder{width:15px;height:15px;flex-shrink:0}
 
-  /* ── status bar ── */
-  .status-bar{
-    margin:12px 20px 0;padding:10px 14px;
-    background:var(--surface2);border-radius:10px;
-    font-size:12px;color:var(--text3);text-align:center;
-    border:0.5px solid var(--border-strong);
-  }
-  .status-bar.ok{color:var(--green)}
-  .status-bar.err{color:var(--red)}
-  .status-bar.loading{color:var(--accent)}
-
-  /* ── empty ── */
   .empty{text-align:center;padding:64px 20px}
   .empty-icon{font-size:32px;margin-bottom:10px;opacity:0.3}
   .empty-t{font-size:14px;font-weight:500;color:var(--text3)}
-  .empty-s{font-size:12px;color:var(--text3);margin-top:4px;opacity:0.7}
 
-  /* ── toast ── */
   .toast{
     position:fixed;bottom:calc(24px + var(--safe-bottom));
     left:50%;transform:translateX(-50%) translateY(14px);
@@ -203,19 +158,18 @@
 </header>
 
 <div class="content">
-  <div class="status-bar loading" id="statusBar">연결 중...</div>
   <div id="mainContent"></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+</div>
 <script>
-/* ── 설정: Apps Script URL 하드코딩 ── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMknxVDJA3H0gj8B7-KRYJ1iq2q8SDV7Vj0BaIi-N8AzCX9iqNhxpU4Fq2cXh575gxLw/exec';
-const ATT_KEY    = 'ast_att_local'; // 스크립트 저장 실패 시 로컬 fallback
+/* ── Apps Script URL ── */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9VKn3KKJH91d2mARUMgzIFHJsCp6kQ2kJqMdrJ_qEXQmi_jdYkNvuK8TNxE4a6BjYdw/exec';
+const ATT_KEY    = 'ast_att';
 
 let allEvents = [];
-let artists   = [];
 let attended  = {};
 let curFilter = 'all';
 
@@ -229,24 +183,19 @@ function fmtDate(d){
 }
 function fmtTime(t){
   if(!t) return '';
-  // "18:00:00" → "18:00", "18:00" → "18:00"
-  return t.slice(0,5);
+  return String(t).slice(0,5);
 }
 function toast(msg){
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2000);
 }
-function setStatus(msg, cls){
-  const el = document.getElementById('statusBar');
-  el.textContent = msg; el.className = 'status-bar ' + (cls||'');
-}
 function onBlur(){
   document.getElementById('searchWrap').classList.remove('focused');
   setTimeout(()=>{ document.getElementById('searchInput').value=''; renderAll(); }, 150);
 }
 
-/* ── local fallback attended ── */
+/* ── attended (로컬 캐시) ── */
 function loadLocalAtt(){
   try { return JSON.parse(localStorage.getItem(ATT_KEY)||'{}'); } catch(e){ return {}; }
 }
@@ -254,23 +203,23 @@ function saveLocalAtt(){
   try { localStorage.setItem(ATT_KEY, JSON.stringify(attended)); } catch(e){}
 }
 
-/* ── toggle going ── */
+/* ── 체크 토글 ── */
 async function toggleGoing(id, ev){
   ev.stopPropagation();
   const next = attended[id] === 'going' ? '' : 'going';
-  attended[id] = next;
-  if(!next) delete attended[id];
+  if(next) attended[id] = 'going'; else delete attended[id];
+  saveLocalAtt();
   renderAll();
-
   try {
-    await fetchScript('POST', { event_id: id, status: next });
-  } catch(e){
-    // fallback: save locally
-    saveLocalAtt();
-  }
+    await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ event_id: id, status: next })
+    });
+  } catch(e){}
 }
 
-/* ── filter / render ── */
+/* ── 필터 ── */
 function setFilter(el, f){
   document.querySelectorAll('.f-tab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active'); curFilter = f; renderAll();
@@ -285,15 +234,12 @@ function getFiltered(){
   }).sort((a,b)=>new Date(a.date)-new Date(b.date));
 }
 
+/* ── 렌더 ── */
 function renderAll(){
   const filtered = getFiltered();
   const el = document.getElementById('mainContent');
   if(!filtered.length){
-    el.innerHTML = `<div class="empty">
-      <div class="empty-icon">🎵</div>
-      <div class="empty-t">일정이 없어요</div>
-      <div class="empty-s">구글 시트에 일정을 추가해보세요</div>
-    </div>`;
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🎵</div><div class="empty-t">일정이 없어요</div></div>`;
     return;
   }
   const groups = {};
@@ -317,24 +263,22 @@ function renderCard(e){
   const isGoing = attended[e.id] === 'going';
 
   let cc='d-chip', ct='';
-  if(days===0)             { cc='d-chip dday'; ct='D-DAY'; }
-  else if(days>0&&days<=14){ cc='d-chip soon'; ct=`D-${days}`; }
-  else if(days>0)          {                   ct=`D-${days}`; }
-  else                     { cc='d-chip past'; ct='종료'; }
+  if(days===0)              { cc='d-chip dday'; ct='D-DAY'; }
+  else if(days>0&&days<=14) { cc='d-chip soon'; ct=`D-${days}`; }
+  else if(days>0)           {                   ct=`D-${days}`; }
+  else                      { cc='d-chip past'; ct='종료'; }
 
-  // meta: date + time + venue
-  const timeStr  = e.time  ? fmtTime(e.time)  : '';
-  const venueStr = e.venue ? e.venue : '';
-  const datePart = `<span class="meta-item">
+  const timeStr = fmtTime(e.time);
+  const dateMeta = `<span class="meta-item">
     <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
       <rect x="1.5" y="3" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
       <path d="M5 1.5V4M11 1.5V4M1.5 7h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
     </svg>${fmtDate(e.date)}${timeStr ? ' · '+timeStr : ''}</span>`;
 
-  const venuePart = venueStr ? `<span class="meta-item">
+  const venueMeta = e.venue ? `<span class="meta-item">
     <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
       <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="currentColor"/>
-    </svg>${venueStr}</span>` : '';
+    </svg>${e.venue}</span>` : '';
 
   const checkEl = isCon
     ? `<div class="check-circle${isGoing?' going':''}" onclick="toggleGoing('${e.id}',event)">
@@ -352,7 +296,7 @@ function renderCard(e){
         <span class="card-artist">${e.artist}</span>
       </div>
       <div class="card-title">${e.title}</div>
-      <div class="card-meta">${datePart}${venuePart}</div>
+      <div class="card-meta">${dateMeta}${venueMeta}</div>
     </div>
     <div class="card-right">
       <span class="${cc}">${ct}</span>
@@ -361,78 +305,51 @@ function renderCard(e){
   </div></div>`;
 }
 
-/* ── Apps Script fetch ── */
-async function fetchScript(method, body){
-  if(method === 'GET'){
-    const url = SCRIPT_URL + '?action=all&t=' + Date.now();
-    // Apps Script GET redirects — use no-cors workaround via JSONP-style
-    const res = await fetch(url, {
-      method: 'GET',
-      redirect: 'follow',
-    });
-    const text = await res.text();
-    // strip JSONP wrapper if present
-    const clean = text.replace(/^[^{]*/,'').replace(/[^}]*$/,'') || text;
-    return JSON.parse(clean.trim() || text.trim());
-  } else {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body),
-    });
-  }
-}
-
-/* ── load from Apps Script ── */
+/* ── 데이터 로드 ── */
 async function loadData(){
-  setStatus('동기화 중...', 'loading');
+  // 로컬 캐시 먼저 적용
+  attended = loadLocalAtt();
+
   try {
-    const json = await fetchScript('GET');
+    const res  = await fetch(SCRIPT_URL + '?action=all&t=' + Date.now(), { redirect:'follow' });
+    const text = await res.text();
 
-    if(!json || !json.ok) throw new Error(json?.error || 'no data');
+    // Apps Script가 가끔 HTML 앞에 붙는 경우 처리
+    const jsonStart = text.indexOf('{');
+    const json      = JSON.parse(jsonStart >= 0 ? text.slice(jsonStart) : text);
 
-    const data = json.data;
+    if(!json.ok) throw new Error(json.error);
 
-    // artists
-    artists = (data.artists||[]).filter(a=>a.id && a.name);
-    const am = {}; artists.forEach(a=>am[a.id]=a.name);
+    const rows = json.data.events || [];
 
-    // single events sheet — type 컬럼으로 concert/release 구분
-    allEvents = (data.events||[])
-      .filter(e => e.id && e.date && e.title)
-      .map(e => ({
-        id:     e.id,
-        artist: am[e.artist_id] || e.artist_id || '?',
-        title:  e.title,
-        date:   e.date,
-        time:   e.time   || '',
-        venue:  e.venue  || '',
-        type:   (e.type  || 'concert').toLowerCase(),
+    // attended 덮어쓰기 (서버 우선)
+    const serverAtt = {};
+    (json.data.attended || []).forEach(a=>{ if(a.event_id && a.status) serverAtt[a.event_id]=a.status; });
+    attended = { ...loadLocalAtt(), ...serverAtt };
+    saveLocalAtt();
+
+    // 시트 컬럼: artist | title | date | time | venue | type | attended
+    allEvents = rows
+      .filter(r => r.artist && r.title && r.date)
+      .map((r, i) => ({
+        id:     `${r.artist}_${r.date}_${i}`,
+        artist: r.artist,
+        title:  r.title,
+        date:   r.date,
+        time:   r.time   || '',
+        venue:  r.venue  || '',
+        type:   (r.type  || 'concert').toLowerCase(),
       }));
 
-    // attended from sheet
-    attended = {};
-    (data.attended||[]).forEach(a=>{
-      if(a.event_id && a.status) attended[a.event_id] = a.status;
-    });
-    // merge local fallback
-    const local = loadLocalAtt();
-    Object.entries(local).forEach(([k,v])=>{ if(!attended[k]) attended[k]=v; });
-
-    setStatus('✓ 동기화됨 · ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}), 'ok');
     renderAll();
   } catch(err){
-    console.error('loadData error:', err);
-    setStatus('연결 실패 — 시트 확인 필요', 'err');
-    // load local attended so UI stays usable
-    attended = loadLocalAtt();
+    console.warn('loadData failed:', err);
+    // 서버 실패해도 로컬 데이터로 유지
     renderAll();
   }
 }
 
-window.addEventListener('DOMContentLoaded', ()=>{ loadData(); });
+window.addEventListener('DOMContentLoaded', loadData);
 </script>
-</div>
 </body>
 </html>
