@@ -95,7 +95,8 @@
   .card-artist{font-size:10px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .card-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.35;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-meta{display:flex;gap:8px;overflow:hidden}
-  .meta-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);white-space:nowrap}
+  .meta-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);white-space:nowrap;line-height:1}
+  .meta-item svg{flex-shrink:0;position:relative;top:0.5px}
 
   /* right col: d-chip top, checkbox bottom with more gap */
   .card-right{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0 12px;flex-shrink:0;width:34px;min-height:72px}
@@ -154,6 +155,7 @@
     <button class="f-tab active" onclick="setFilter(this,'all')"     data-f="all">전체</button>
     <button class="f-tab"        onclick="setFilter(this,'concert')" data-f="concert">공연</button>
     <button class="f-tab"        onclick="setFilter(this,'release')" data-f="release">발매</button>
+    <button class="f-tab"        onclick="setFilter(this,'archive')" data-f="archive">지난 일정</button>
   </div>
 </header>
 
@@ -233,11 +235,23 @@ function setFilter(el, f){
 function getFiltered(){
   const q = (document.getElementById('searchInput').value||'').toLowerCase();
   return allEvents.filter(e=>{
-    if(curFilter==='concert' && e.type!=='concert') return false;
-    if(curFilter==='release' && e.type!=='release') return false;
+    const days = daysUntil(e.date);
+    if(curFilter === 'archive'){
+      // 지난 일정만
+      if(days >= 0) return false;
+    } else {
+      // 나머지 탭은 오늘 포함 앞으로만
+      if(days < 0) return false;
+      if(curFilter==='concert' && e.type!=='concert') return false;
+      if(curFilter==='release' && e.type!=='release') return false;
+    }
     if(q && !e.artist.toLowerCase().includes(q) && !e.title.toLowerCase().includes(q)) return false;
     return true;
-  }).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  }).sort((a,b)=>{
+    // 지난 일정은 최신순
+    if(curFilter === 'archive') return new Date(b.date) - new Date(a.date);
+    return new Date(a.date) - new Date(b.date);
+  });
 }
 
 /* ── 렌더 ── */
