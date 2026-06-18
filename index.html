@@ -166,7 +166,7 @@
 </div>
 <script>
 /* ── Apps Script URL ── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9VKn3KKJH91d2mARUMgzIFHJsCp6kQ2kJqMdrJ_qEXQmi_jdYkNvuK8TNxE4a6BjYdw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4iGM4qQWh790oprDXBGMmu005tgCnOEcFCrF0oapKxBKR7ZWC9hpAbdZogAxyFSutOg/exec';
 const ATT_KEY    = 'ast_att';
 
 let allEvents = [];
@@ -305,30 +305,28 @@ function renderCard(e){
   </div></div>`;
 }
 
-/* ── 데이터 로드 ── */
-async function loadData(){
-  // 로컬 캐시 먼저 적용
+/* ── JSONP로 데이터 로드 ── */
+function loadData(){
   attended = loadLocalAtt();
+  renderAll(); // 로컬 캐시 먼저 보여주기
 
-  try {
-    const res  = await fetch(SCRIPT_URL + '?action=all&t=' + Date.now(), { redirect:'follow' });
-    const text = await res.text();
+  const cbName = 'asCb_' + Date.now();
+  const script = document.createElement('script');
 
-    // Apps Script가 가끔 HTML 앞에 붙는 경우 처리
-    const jsonStart = text.indexOf('{');
-    const json      = JSON.parse(jsonStart >= 0 ? text.slice(jsonStart) : text);
+  window[cbName] = function(json){
+    delete window[cbName];
+    document.head.removeChild(script);
 
-    if(!json.ok) throw new Error(json.error);
+    if(!json || !json.ok){ console.warn('script error:', json); return; }
 
     const rows = json.data.events || [];
 
-    // attended 덮어쓰기 (서버 우선)
+    // 서버 attended 반영
     const serverAtt = {};
-    (json.data.attended || []).forEach(a=>{ if(a.event_id && a.status) serverAtt[a.event_id]=a.status; });
+    (json.data.attended || []).forEach(a=>{ if(a.event_id && a.status) serverAtt[a.event_id] = a.status; });
     attended = { ...loadLocalAtt(), ...serverAtt };
     saveLocalAtt();
 
-    // 시트 컬럼: artist | title | date | time | venue | type | attended
     allEvents = rows
       .filter(r => r.artist && r.title && r.date)
       .map((r, i) => ({
@@ -336,17 +334,17 @@ async function loadData(){
         artist: r.artist,
         title:  r.title,
         date:   r.date,
-        time:   r.time   || '',
-        venue:  r.venue  || '',
-        type:   (r.type  || 'concert').toLowerCase(),
+        time:   r.time  || '',
+        venue:  r.venue || '',
+        type:   (r.type || 'concert').toLowerCase(),
       }));
 
     renderAll();
-  } catch(err){
-    console.warn('loadData failed:', err);
-    // 서버 실패해도 로컬 데이터로 유지
-    renderAll();
-  }
+  };
+
+  script.onerror = function(){ console.warn('JSONP load failed'); };
+  script.src = `${SCRIPT_URL}?action=all&callback=${cbName}&t=${Date.now()}`;
+  document.head.appendChild(script);
 }
 
 window.addEventListener('DOMContentLoaded', loadData);
