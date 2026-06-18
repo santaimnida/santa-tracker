@@ -10,9 +10,9 @@
     --bg:#FFFFFF; --surface:#FFFFFF; --surface2:#F2F2F7;
     --border:rgba(0,0,0,0.08); --border-strong:rgba(0,0,0,0.11);
     --text:#1C1C1E; --text3:#8E8E93; --accent:#007AFF;
-    --concert:#5BA8D4; --concert-bg:#A8D1F0;
-    --release:#8A9A2E; --release-bg:#F1F0C8;
-    --green:#34C759; --red:#FF3B30; --red-bg:rgba(255,59,48,0.10);
+    --concert:#A8D1F0; --concert-bg:#EAF4FC;
+    --release:#D4E89A; --release-bg:#F5F7E8;
+    --green:#34C759; --check:#D9ED92; --red:#FF3B30; --red-bg:rgba(255,59,48,0.10);
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
     --safe-top:env(safe-area-inset-top,0px);
     --safe-bottom:env(safe-area-inset-bottom,0px);
@@ -21,7 +21,7 @@
     --bg:#000; --surface:#1C1C1E; --surface2:#2C2C2E;
     --border:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.11);
     --text:#FFF; --text3:#8E8E93;
-    --concert-bg:rgba(168,209,240,0.2); --release-bg:rgba(241,240,200,0.2);
+    --concert-bg:rgba(168,209,240,0.15); --release-bg:rgba(212,232,154,0.15);
     --red-bg:rgba(255,59,48,0.13);
   }}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -92,14 +92,13 @@
   }
   .pill-concert{background:var(--concert-bg);color:#3A7FA8}
   .pill-release{background:var(--release-bg);color:#5C6B1A}
-
   .card-artist{font-size:10px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .card-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.35;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-meta{display:flex;gap:8px;overflow:hidden}
   .meta-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);white-space:nowrap}
 
   /* right col: d-chip top, checkbox bottom with more gap */
-  .card-right{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14px 0;flex-shrink:0;width:34px}
+  .card-right{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:11px 0 13px;flex-shrink:0;width:34px}
 
   .d-chip{font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;background:var(--surface2);color:var(--text3);white-space:nowrap;text-align:center;min-width:30px}
   .d-chip.soon{background:var(--red-bg);color:var(--red)}
@@ -113,7 +112,7 @@
     transition:all 0.13s;flex-shrink:0;
   }
   .check-circle:active{transform:scale(0.82)}
-  .check-circle.going{background:var(--green);border-color:var(--green)}
+  .check-circle.going{background:#D9ED92;border-color:#B5CC5A}
   .check-circle svg{opacity:0;transition:opacity 0.1s}
   .check-circle.going svg{opacity:1}
   .check-placeholder{width:15px;height:15px;flex-shrink:0}
@@ -284,7 +283,7 @@ function renderCard(e){
   const checkEl = isCon
     ? `<div class="check-circle${isGoing?' going':''}" onclick="toggleGoing('${e.id}',event)">
         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-          <path d="M1 4l2 2 4-4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1 4l2 2 4-4" stroke="#5C7A1A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>`
     : `<div class="check-placeholder"></div>`;
@@ -293,7 +292,6 @@ function renderCard(e){
     <div class="type-bar ${isCon?'bar-concert':'bar-release'}"></div>
     <div class="card-info">
       <div class="card-top">
-        <span class="type-pill ${isCon?'pill-concert':'pill-release'}">${isCon?'공연':'발매'}</span>
         <span class="card-artist">${e.artist}</span>
       </div>
       <div class="card-title">${e.title}</div>
