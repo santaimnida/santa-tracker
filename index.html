@@ -83,7 +83,7 @@
   .bar-concert{background:var(--concert)}
   .bar-release{background:var(--release)}
 
-  .card-info{flex:1;min-width:0;overflow:hidden}
+  .card-info{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
   .card-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
 
   .type-pill{
@@ -175,8 +175,14 @@ let curFilter = 'all';
 
 /* ── utils ── */
 function daysUntil(d){
-  const t = new Date(); t.setHours(0,0,0,0);
-  return Math.ceil((new Date(d) - t) / 86400000);
+  // 한국 시간(KST, UTC+9) 기준으로 날짜 계산
+  const now = new Date();
+  const kstOffset = 9 * 60; // 분 단위
+  const localOffset = now.getTimezoneOffset(); // 분 단위 (UTC - local)
+  const kstNow = new Date(now.getTime() + (kstOffset + localOffset) * 60000);
+  kstNow.setHours(0,0,0,0);
+  const target = new Date(d + 'T00:00:00+09:00');
+  return Math.ceil((target - kstNow) / 86400000);
 }
 function fmtDate(d){
   return new Date(d).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
