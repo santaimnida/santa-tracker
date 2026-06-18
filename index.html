@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Concert Tracker</title>
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    background: #f8f8f8;
+    color: #111;
+}
+
+header {
+    padding: 24px;
+    background: white;
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid #eee;
+}
+
+h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.container {
+    padding: 16px;
+}
+
+.card {
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.date {
+    color: #666;
+    font-size: 14px;
+}
+
+.artist {
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+.status {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.예정 {
+    background: #dff5e1;
+}
+
+.고민 {
+    background: #fff4d4;
+}
+
+.포기 {
+    background: #ffe1e1;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎸 My Concert Tracker</h1>
+</header>
+
+<div class="container" id="events"></div>
+
+<script>
+
+const SHEET_URL =
+"여기에_구글시트_CSV주소";
+
+async function loadEvents() {
+
+    const response = await fetch(SHEET_URL);
+    const csv = await response.text();
+
+    const rows = csv.trim().split("\n");
+
+    const data = rows.slice(1).map(row => {
+        const cols = row.split(",");
+        return {
+            artist: cols[0],
+            title: cols[1],
+            date: cols[2],
+            type: cols[3],
+            status: cols[4]
+        };
+    });
+
+    data.sort((a,b) =>
+        new Date(a.date) - new Date(b.date)
+    );
+
+    const container =
+        document.getElementById("events");
+
+    container.innerHTML = "";
+
+    data.forEach(item => {
+
+        container.innerHTML += `
+            <div class="card">
+                <div class="date">${item.date}</div>
+
+                <div class="artist">
+                    ${item.artist}
+                </div>
+
+                <div>
+                    ${item.title}
+                </div>
+
+                <div>
+                    ${item.type}
+                </div>
+
+                <span class="status ${item.status}">
+                    ${item.status}
+                </span>
+            </div>
+        `;
+    });
+}
+
+loadEvents();
+
+</script>
+
+</body>
+</html>
