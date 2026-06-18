@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Artist Schedule</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  :root {
+    --bg:#FFFFFF;--surface:#FFFFFF;--surface2:#F2F2F7;
+    --border:rgba(0,0,0,0.08);--border-strong:rgba(0,0,0,0.11);
+    --text:#1C1C1E;--text3:#8E8E93;--accent:#007AFF;
+    --concert:#007AFF;--concert-bg:rgba(0,122,255,0.10);
+    --release:#AF52DE;--release-bg:rgba(175,82,222,0.10);
+    --green:#34C759;--red:#FF3B30;--red-bg:rgba(255,59,48,0.10);
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+    --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#000;--surface:#1C1C1E;--surface2:#2C2C2E;
+    --border:rgba(255,255,255,0.07);--border-strong:rgba(255,255,255,0.11);
+    --text:#FFF;--text3:#8E8E93;
+    --concert-bg:rgba(0,122,255,0.15);--release-bg:rgba(175,82,222,0.15);--red-bg:rgba(255,59,48,0.13);
+  }}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+
+  .header{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:rgba(255,255,255,0.94);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-bottom:0.5px solid var(--border-strong);
+    padding-top:var(--safe-top);
+  }
+  @media(prefers-color-scheme:dark){.header{background:rgba(0,0,0,0.9)}}
+
+  .header-row{display:flex;align-items:center;padding:13px 16px 8px;gap:10px}
+  .header-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;flex:1}
+
+  .search-wrap{
+    display:flex;align-items:center;background:var(--surface2);
+    border-radius:9px;padding:0 9px;gap:6px;height:30px;width:120px;
+    transition:width 0.2s ease;
+  }
+  .search-wrap.focused{width:170px}
+  .search-wrap svg{color:var(--text3);flex-shrink:0}
+  .search-input{width:100%;background:none;border:none;outline:none;font-size:13px;font-family:var(--font);color:var(--text)}
+  .search-input::placeholder{color:var(--text3)}
+
+  .filter-row{display:flex;padding:0 16px 9px;gap:6px}
+  .f-tab{
+    height:26px;padding:0 12px;border:none;background:var(--surface2);
+    border-radius:20px;font-size:12px;font-weight:500;font-family:var(--font);
+    color:var(--text3);cursor:pointer;white-space:nowrap;
+    transition:background 0.12s,color 0.12s;
+  }
+  .f-tab:active{opacity:0.6}
+  .f-tab.active{background:var(--accent);color:#fff}
+
+  .content{padding-top:92px;padding-bottom:calc(28px + var(--safe-bottom))}
+
+  .section-label{
+    font-size:12px;font-weight:600;color:var(--text3);
+    letter-spacing:0.05em;text-transform:uppercase;padding:20px 16px 8px;
+  }
+  .event-list{display:flex;flex-direction:column;gap:8px;padding:0 16px}
+
+  .event-card{background:var(--surface);border-radius:12px;border:0.5px solid var(--border-strong);overflow:hidden}
+  .card-inner{display:flex;align-items:center;padding:11px 14px 11px 12px;gap:11px}
+
+  .type-bar{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch;min-height:40px}
+  .bar-concert{background:var(--concert)}
+  .bar-release{background:var(--release)}
+
+  .card-info{flex:1;min-width:0}
+  .card-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+
+  .type-pill{
+    font-size:10px;font-weight:600;
+    width:28px;text-align:center;padding:2px 0;border-radius:4px;
+    flex-shrink:0;letter-spacing:0.01em;
+  }
+  .pill-concert{background:var(--concert-bg);color:var(--concert)}
+  .pill-release{background:var(--release-bg);color:var(--release)}
+
+  .card-artist{font-size:11px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.3;margin-bottom:4px}
+  .card-meta{display:flex;flex-wrap:wrap;gap:8px}
+  .meta-item{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--text3)}
+
+  .card-right{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;width:36px}
+
+  .d-chip{font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;background:var(--surface2);color:var(--text3);white-space:nowrap;text-align:center;min-width:32px}
+  .d-chip.soon{background:var(--red-bg);color:var(--red)}
+  .d-chip.dday{background:var(--accent);color:#fff}
+  .d-chip.past{opacity:0.38}
+
+  .check-circle{
+    width:20px;height:20px;border-radius:50%;
+    border:1.5px solid var(--border-strong);background:transparent;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:all 0.13s;flex-shrink:0;
+  }
+  .check-circle:active{transform:scale(0.84)}
+  .check-circle.going{background:var(--green);border-color:var(--green)}
+  .check-circle svg{opacity:0;transition:opacity 0.1s}
+  .check-circle.going svg{opacity:1}
+  .check-placeholder{width:20px;height:20px;flex-shrink:0}
+
+  .connect-banner{
+    margin:12px 16px 0;background:var(--surface2);border-radius:12px;
+    padding:13px 15px;display:flex;align-items:center;gap:11px;
+    cursor:pointer;border:0.5px solid var(--border-strong);
+  }
+  .connect-banner:active{opacity:0.7}
+  .connect-banner.hidden{display:none}
+  .banner-icon{font-size:20px;flex-shrink:0}
+  .banner-text{flex:1}
+  .banner-title{font-size:13px;font-weight:600;color:var(--text)}
+  .banner-sub{font-size:11px;color:var(--text3);margin-top:1px}
+  .banner-arrow{color:var(--text3);font-size:18px}
+
+  .empty{text-align:center;padding:64px 20px}
+  .empty-icon{font-size:32px;margin-bottom:10px;opacity:0.3}
+  .empty-t{font-size:14px;font-weight:500;color:var(--text3)}
+
+  /* ── bottom sheet ── */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;display:none;align-items:flex-end}
+  .overlay.open{display:flex}
+  .bottom-panel{
+    background:var(--surface);border-radius:20px 20px 0 0;
+    padding:20px 20px calc(24px + var(--safe-bottom));width:100%;
+    animation:su .24s cubic-bezier(.34,1.4,.64,1);
+  }
+  @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .panel-handle{width:34px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 16px}
+  .panel-title{font-size:16px;font-weight:600;margin-bottom:6px}
+  .panel-desc{font-size:13px;color:var(--text3);line-height:1.7;margin-bottom:14px}
+  .panel-desc code{font-family:monospace;font-size:11px;background:var(--surface2);padding:1px 5px;border-radius:4px}
+  .panel-desc strong{color:var(--text)}
+
+  /* mode toggle */
+  .mode-toggle{display:flex;gap:0;margin-bottom:14px;border-radius:9px;overflow:hidden;border:0.5px solid var(--border-strong)}
+  .mode-btn{
+    flex:1;height:34px;border:none;background:var(--surface2);
+    font-size:13px;font-weight:500;font-family:var(--font);
+    color:var(--text3);cursor:pointer;transition:all 0.12s;
+  }
+  .mode-btn.active{background:var(--accent);color:#fff}
+
+  .panel-input{
+    width:100%;background:var(--surface2);border:0.5px solid var(--border-strong);
+    border-radius:10px;padding:11px 13px;font-size:15px;font-family:var(--font);
+    color:var(--text);outline:none;margin-bottom:10px;
+  }
+  .panel-input:focus{border-color:var(--accent)}
+
+  .btn-main{width:100%;height:48px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer}
+  .btn-main:active{opacity:0.8}
+
+  .sync-msg{font-size:12px;color:var(--text3);text-align:center;margin-top:10px;min-height:16px;line-height:1.5}
+  .sync-msg.ok{color:var(--green)}
+  .sync-msg.err{color:var(--red)}
+
+  /* steps */
+  .steps{margin-bottom:14px}
+  .step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+  .step-num{
+    width:20px;height:20px;border-radius:50%;background:var(--accent);
+    color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;
+    justify-content:center;flex-shrink:0;margin-top:1px;
+  }
+  .step-text{font-size:13px;color:var(--text3);line-height:1.6}
+  .step-text strong{color:var(--text)}
+
+  .toast{
+    position:fixed;bottom:calc(24px + var(--safe-bottom));
+    left:50%;transform:translateX(-50%) translateY(14px);
+    background:rgba(28,28,30,0.9);color:#fff;font-size:13px;font-weight:500;
+    padding:8px 16px;border-radius:20px;z-index:400;opacity:0;
+    transition:opacity .16s,transform .16s;white-space:nowrap;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-row">
+    <span class="header-title">🎵 Artist Schedule</span>
+    <div class="search-wrap" id="searchWrap">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input class="search-input" id="searchInput" placeholder="검색"
+        oninput="renderAll()"
+        onfocus="document.getElementById('searchWrap').classList.add('focused')"
+        onblur="onBlur()" autocomplete="off"/>
+    </div>
+  </div>
+  <div class="filter-row">
+    <button class="f-tab active" onclick="setFilter(this,'all')"     data-f="all">전체</button>
+    <button class="f-tab"        onclick="setFilter(this,'concert')" data-f="concert">공연</button>
+    <button class="f-tab"        onclick="setFilter(this,'release')" data-f="release">발매</button>
+  </div>
+</header>
+
+<div class="content">
+  <div class="connect-banner" id="connectBanner" onclick="openPanel()">
+    <span class="banner-icon">📋</span>
+    <div class="banner-text">
+      <div class="banner-title">Google Sheets 연결</div>
+      <div class="banner-sub">탭해서 시트를 연결하세요</div>
+    </div>
+    <span class="banner-arrow">›</span>
+  </div>
+  <div id="mainContent"></div>
+</div>
+
+<!-- ── Bottom sheet ── -->
+<div class="overlay" id="overlay" onclick="closeIfOut(event)">
+  <div class="bottom-panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title">Google Sheets 연결</div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="setMode(this,'csv')">기본 연결 (CSV)</button>
+      <button class="mode-btn"        onclick="setMode(this,'script')">Apps Script (참석 저장)</button>
+    </div>
+
+    <!-- CSV mode -->
+    <div id="modeCSV">
+      <div class="panel-desc">
+        시트를 <strong>링크가 있는 모든 사용자 → 뷰어</strong>로 공유 후<br>
+        시트 ID 또는 URL을 붙여넣으세요.<br>
+        <code>spreadsheets/d/<strong>시트ID</strong>/edit</code><br>
+        ※ 참석 체크는 이 기기에만 저장됩니다.
+      </div>
+      <input class="panel-input" id="sheetIdInput" placeholder="시트 ID 또는 전체 URL"/>
+      <button class="btn-main" onclick="connectCSV()">연결</button>
+    </div>
+
+    <!-- Apps Script mode -->
+    <div id="modeScript" style="display:none">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text">구글 시트 열기 → <strong>확장 프로그램 → Apps Script</strong></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text">다운로드한 <code>artist-schedule-appscript.js</code> 내용을 붙여넣고 저장</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>배포 → 새 배포 → 웹 앱</strong><br>실행: 나 / 액세스: 모든 사용자 → 배포</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text">생성된 <strong>웹 앱 URL</strong>을 아래에 붙여넣기</div></div>
+      </div>
+      <input class="panel-input" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec"/>
+      <button class="btn-main" onclick="connectScript()">Apps Script로 연결</button>
+    </div>
+
+    <div class="sync-msg" id="syncMsg"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_KEY  = 'ast_sheetId';
+const SCRIPT_KEY = 'ast_scriptUrl';
+
+let sheetId   = localStorage.getItem(SHEET_KEY)  || '';
+let scriptUrl = localStorage.getItem(SCRIPT_KEY) || '';
+let allEvents = [];
+let artists   = [];
+let attended  = {};
+let curFilter = 'all';
+let useScript = !!scriptUrl;
+
+/* ── utils ── */
+function daysUntil(d){ const t=new Date();t.setHours(0,0,0,0);return Math.ceil((new Date(d)-t)/86400000); }
+function fmtDate(d){ return new Date(d).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); }
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2000);
+}
+function onBlur(){
+  document.getElementById('searchWrap').classList.remove('focused');
+  setTimeout(()=>{document.getElementById('searchInput').value='';renderAll();},150);
+}
+
+/* ── mode toggle ── */
+function setMode(el, mode){
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('modeCSV').style.display    = mode==='csv'    ? '' : 'none';
+  document.getElementById('modeScript').style.display = mode==='script' ? '' : 'none';
+}
+
+/* ── attendance ── */
+function loadAtt(){
+  if(useScript) return; // script mode: loaded from server
+  try { attended=JSON.parse(localStorage.getItem('ast_att_'+sheetId)||'{}'); } catch(e){ attended={}; }
+}
+function saveAttLocal(id, status){
+  if(status) attended[id]=status; else delete attended[id];
+  try { localStorage.setItem('ast_att_'+sheetId, JSON.stringify(attended)); } catch(e){}
+}
+
+async function toggleGoing(id, ev){
+  ev.stopPropagation();
+  const next = attended[id]==='going' ? null : 'going';
+
+  if(useScript){
+    try {
+      // optimistic UI
+      if(next) attended[id]='going'; else delete attended[id];
+      renderAll();
+      await fetch(scriptUrl, {
+        method:'POST', mode:'no-cors',
+        body: JSON.stringify({event_id:id, status:next||''})
+      });
+    } catch(e){ toast('저장 실패'); }
+  } else {
+    saveAttLocal(id, next);
+    renderAll();
+  }
+}
+
+/* ── filter / render ── */
+function setFilter(el,f){
+  document.querySelectorAll('.f-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); curFilter=f; renderAll();
+}
+function getFiltered(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  return allEvents.filter(e=>{
+    if(curFilter==='concert'&&e.type!=='concert') return false;
+    if(curFilter==='release'&&e.type!=='release') return false;
+    if(q&&!e.artist.toLowerCase().includes(q)&&!e.title.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b)=>new Date(a.date)-new Date(b.date));
+}
+
+function renderAll(){
+  const filtered=getFiltered();
+  const el=document.getElementById('mainContent');
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🎵</div><div class="empty-t">일정이 없어요</div></div>`;
+    return;
+  }
+  const groups={};
+  filtered.forEach(e=>{
+    const d=new Date(e.date);
+    const k=`${d.getFullYear()}년 ${d.getMonth()+1}월`;
+    (groups[k]=groups[k]||[]).push(e);
+  });
+  let html='';
+  for(const [month,evs] of Object.entries(groups)){
+    html+=`<div class="section-label">${month}</div><div class="event-list">`;
+    evs.forEach(e=>{html+=renderCard(e);});
+    html+=`</div>`;
+  }
+  el.innerHTML=html;
+}
+
+function renderCard(e){
+  const days=daysUntil(e.date);
+  const isCon=e.type==='concert';
+  const isGoing=attended[e.id]==='going';
+  let cc='d-chip',ct='';
+  if(days===0){cc='d-chip dday';ct='D-DAY';}
+  else if(days>0&&days<=14){cc='d-chip soon';ct=`D-${days}`;}
+  else if(days>0){ct=`D-${days}`;}
+  else{cc='d-chip past';ct='종료';}
+
+  const barCls=isCon?'bar-concert':'bar-release';
+  const pillCls=isCon?'pill-concert':'pill-release';
+  const typeLabel=isCon?'공연':'발매';
+  const venue=e.venue?`<span class="meta-item">
+    <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="currentColor"/>
+    </svg>${e.venue}</span>`:'';
+
+  const checkEl=isCon
+    ?`<div class="check-circle${isGoing?' going':''}" onclick="toggleGoing('${e.id}',event)">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>`
+    :`<div class="check-placeholder"></div>`;
+
+  return `<div class="event-card"><div class="card-inner">
+    <div class="type-bar ${barCls}"></div>
+    <div class="card-info">
+      <div class="card-top">
+        <span class="type-pill ${pillCls}">${typeLabel}</span>
+        <span class="card-artist">${e.artist}</span>
+      </div>
+      <div class="card-title">${e.title}</div>
+      <div class="card-meta">
+        <span class="meta-item">
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
+            <rect x="1.5" y="3" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M5 1.5V4M11 1.5V4M1.5 7h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>${fmtDate(e.date)}</span>
+        ${venue}
+      </div>
+    </div>
+    <div class="card-right">
+      <span class="${cc}">${ct}</span>
+      ${checkEl}
+    </div>
+  </div></div>`;
+}
+
+/* ── panel ── */
+function openPanel(){ document.getElementById('sheetIdInput').value=sheetId; document.getElementById('scriptUrlInput').value=scriptUrl; document.getElementById('overlay').classList.add('open'); }
+function closeIfOut(e){ if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); }
+
+/* ── CSV connect ── */
+async function connectCSV(){
+  const raw=document.getElementById('sheetIdInput').value.trim();
+  if(!raw){toast('시트 ID를 입력해주세요');return;}
+  const m=raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  sheetId=m?m[1]:raw;
+  localStorage.setItem(SHEET_KEY,sheetId);
+  useScript=false;
+  const msg=document.getElementById('syncMsg');
+  msg.className='sync-msg';msg.textContent='동기화 중...';
+  try {
+    await loadSheetCSV();
+    msg.className='sync-msg ok';msg.textContent='✓ 연결됨 (참석은 이 기기에 저장)';
+    toast('연결 완료! 🎉');
+    document.getElementById('connectBanner').classList.add('hidden');
+    setTimeout(()=>document.getElementById('overlay').classList.remove('open'),900);
+  } catch(err){
+    msg.className='sync-msg err';msg.textContent='연결 실패 — 시트 공유 설정을 확인해주세요';
+    loadDemo();
+  }
+}
+
+/* ── Apps Script connect ── */
+async function connectScript(){
+  const url=document.getElementById('scriptUrlInput').value.trim();
+  if(!url){toast('웹 앱 URL을 입력해주세요');return;}
+  scriptUrl=url;
+  localStorage.setItem(SCRIPT_KEY,scriptUrl);
+  useScript=true;
+  const msg=document.getElementById('syncMsg');
+  msg.className='sync-msg';msg.textContent='Apps Script 연결 중...';
+  try {
+    await loadSheetScript();
+    msg.className='sync-msg ok';msg.textContent='✓ Apps Script 연결됨 (참석이 시트에 저장됩니다)';
+    toast('Apps Script 연결 완료! 🎉');
+    document.getElementById('connectBanner').classList.add('hidden');
+    setTimeout(()=>document.getElementById('overlay').classList.remove('open'),900);
+  } catch(err){
+    msg.className='sync-msg err';msg.textContent='연결 실패 — URL과 배포 설정을 확인해주세요';
+  }
+}
+
+/* ── CSV loader ── */
+async function fetchCSV(name){
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`,{cache:'no-cache'});
+  if(!r.ok) throw new Error(name);
+  return r.text();
+}
+function parseCSV(txt){
+  const lines=txt.trim().split('\n');
+  if(lines.length<2) return [];
+  const headers=lines[0].replace(/\r/g,'').split(',').map(h=>h.replace(/"/g,'').trim());
+  return lines.slice(1).map(line=>{
+    const vals=[];let cur='',inQ=false;
+    for(const ch of line){if(ch==='"')inQ=!inQ;else if(ch===','&&!inQ){vals.push(cur.trim());cur='';}else cur+=ch;}
+    vals.push(cur.trim());
+    const o={};headers.forEach((h,i)=>{o[h]=(vals[i]||'').replace(/\r/g,'');});
+    return o;
+  });
+}
+async function loadSheetCSV(){
+  const [aCsv,eCsv,rCsv]=await Promise.all([fetchCSV('artists'),fetchCSV('events'),fetchCSV('releases')]);
+  artists=parseCSV(aCsv).filter(a=>a.id&&a.name);
+  const am={};artists.forEach(a=>am[a.id]=a.name);
+  const evs=parseCSV(eCsv).filter(e=>e.id&&e.date&&e.title).map(e=>({id:'e_'+e.id,artist:am[e.artist_id]||e.artist_id||'?',title:e.title,date:e.date,venue:e.venue||'',type:(e.type||'concert').toLowerCase()}));
+  const rels=parseCSV(rCsv).filter(r=>r.id&&r.date&&r.title).map(r=>({id:'r_'+r.id,artist:am[r.artist_id]||r.artist_id||'?',title:r.title,date:r.date,venue:'',type:'release'}));
+  allEvents=[...evs,...rels];
+  loadAtt();renderAll();
+}
+
+/* ── Apps Script loader ── */
+async function loadSheetScript(){
+  const r=await fetch(scriptUrl+'?action=all',{cache:'no-cache'});
+  const json=await r.json();
+  if(!json.ok) throw new Error(json.error);
+  const {data}=json;
+  artists=(data.artists||[]).filter(a=>a.id&&a.name);
+  const am={};artists.forEach(a=>am[a.id]=a.name);
+  const evs=(data.events||[]).filter(e=>e.id&&e.date&&e.title).map(e=>({id:'e_'+e.id,artist:am[e.artist_id]||e.artist_id||'?',title:e.title,date:e.date,venue:e.venue||'',type:(e.type||'concert').toLowerCase()}));
+  const rels=(data.releases||[]).filter(r=>r.id&&r.date&&r.title).map(r=>({id:'r_'+r.id,artist:am[r.artist_id]||r.artist_id||'?',title:r.title,date:r.date,venue:'',type:'release'}));
+  allEvents=[...evs,...rels];
+  // load attended from script
+  attended={};
+  (data.attended||[]).forEach(a=>{if(a.event_id&&a.status)attended[a.event_id]=a.status;});
+  renderAll();
+}
+
+/* ── Demo ── */
+function loadDemo(){
+  artists=[{id:'1',name:'マルシィ'},{id:'2',name:'Xdinary Heroes'}];
+  const add=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];};
+  allEvents=[
+    {id:'r_3',artist:'Xdinary Heroes',title:'Digital Single "Error"',     date:add(7),  venue:'',               type:'release'},
+    {id:'e_1',artist:'マルシィ',        title:'MARCY TOUR 2025 ~春夏~',   date:add(18), venue:'渋谷WWW X',       type:'concert'},
+    {id:'r_2',artist:'Xdinary Heroes',title:'Mini Album Vol.4',            date:add(28), venue:'',               type:'release'},
+    {id:'r_1',artist:'マルシィ',        title:'New Album "花束"',          date:add(35), venue:'',               type:'release'},
+    {id:'e_2',artist:'Xdinary Heroes',title:'2025 FAN-CON "PUZZLE"',       date:add(52), venue:'KBS 아레나',     type:'concert'},
+    {id:'e_3',artist:'マルシィ',        title:'Acoustic Live at Blue Note', date:add(90), venue:'Blue Note Tokyo',type:'concert'},
+  ];
+  loadAtt();renderAll();
+}
+
+/* ── Init ── */
+window.addEventListener('DOMContentLoaded',async()=>{
+  if(scriptUrl){
+    document.getElementById('connectBanner').classList.add('hidden');
+    try{await loadSheetScript();}catch(e){loadDemo();}
+  } else if(sheetId){
+    document.getElementById('connectBanner').classList.add('hidden');
+    try{await loadSheetCSV();}catch(e){loadDemo();}
+  } else {
+    loadDemo();
+  }
+});
+</script>
+</body>
+</html>
