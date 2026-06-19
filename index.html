@@ -348,9 +348,12 @@ function renderStats(){
   let html='<div class="stats-content">';
   years.forEach(year=>{
     const evs=byYear[year];
-    // 아티스트별 카운트
-    const counts={};
-    evs.forEach(e=>{ counts[e.artist]=(counts[e.artist]||0)+1; });
+  // 아티스트별 카운트 — 쉼표로 구분된 경우 각각 카운트
+  const counts={};
+  evs.forEach(e=>{
+    const artists=e.artist.split(',').map(a=>a.trim()).filter(Boolean);
+    artists.forEach(a=>{ counts[a]=(counts[a]||0)+1; });
+  });
     const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
     const maxCount=sorted[0][1];
     const total=evs.length;
@@ -436,8 +439,13 @@ function loadData(){
         time:r.time||'',venue:r.venue||'',type:'concert',
       }));
 
-    // 로컬에서 직접 추가한 것 유지
-    const localAdded=allEvents.filter(e=>!e.id.startsWith('sheet_'));
+    // 로컬에서 직접 추가한 것만 유지 (sheet_ 아닌 것)
+    // 단, 서버에 이미 같은 내용이 있으면 제외 (title+date로 중복 체크)
+    const serverKeys=new Set(serverEvents.map(e=>e.title+'|'+e.date));
+    const localAdded=allEvents.filter(e=>
+      !e.id.startsWith('sheet_') && !serverKeys.has(e.title+'|'+e.date)
+    );
+
     allEvents=[...serverEvents,...localAdded];
     saveEvents();
     renderAll();
