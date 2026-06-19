@@ -89,6 +89,33 @@
   .d-chip.dday{background:#fff;color:var(--text);border:0.5px solid var(--border-strong)}
   .d-chip.past{opacity:0.38}
 
+  /* ── archive ── */
+  .archive-wrap{padding:0 20px}
+  .archive-year{margin-bottom:28px}
+  .archive-year-label{font-size:20px;font-weight:600;letter-spacing:-0.5px;padding:20px 0 14px;border-bottom:0.5px solid var(--border-strong);margin-bottom:12px}
+
+  .archive-month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:4px}
+
+  .month-btn{
+    height:40px;border-radius:10px;border:0.5px solid var(--border);
+    background:var(--surface2);font-size:12px;font-weight:500;
+    font-family:var(--font);color:var(--text3);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;transition:all 0.12s;
+  }
+  .month-btn:disabled{opacity:0.28;cursor:default}
+  .month-btn.has{background:var(--surface);border-color:var(--border-strong);color:var(--text)}
+  .month-btn.active{background:var(--concert-bg);border-color:var(--concert);color:var(--text)}
+  .month-btn:active:not(:disabled){opacity:0.6}
+
+  .month-count{font-size:10px;font-weight:600;color:var(--text3)}
+  .month-btn.active .month-count{color:var(--text3)}
+
+  .month-list{
+    display:flex;flex-direction:column;gap:8px;
+    padding:10px 0 6px;
+  }
+
   /* ── stats tab ── */
   .stats-content{padding:0 20px}
 
@@ -273,6 +300,7 @@ function getFiltered(){
 /* ── render ── */
 function renderAll(){
   if(curFilter==='stats'){ renderStats(); return; }
+  if(curFilter==='archive'){ renderArchive(); return; }
   const filtered=getFiltered();
   const el=document.getElementById('mainContent');
   if(!filtered.length){
@@ -324,7 +352,71 @@ function renderCard(e){
   </div></div>`;
 }
 
-/* ── stats ── */
+/* ── archive render: year → month grid → concert list ── */
+function renderArchive(){
+  const el=document.getElementById('mainContent');
+  const past=allEvents.filter(e=>daysUntil(e.date)<0);
+  if(!past.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🎤</div><div class="empty-t">지난 공연이 없어요</div></div>`;
+    return;
+  }
+
+  // 연도별 그룹
+  const byYear={};
+  past.forEach(e=>{
+    const d=new Date(e.date);
+    const y=d.getFullYear();
+    const m=d.getMonth()+1;
+    if(!byYear[y]) byYear[y]={};
+    if(!byYear[y][m]) byYear[y][m]=[];
+    byYear[y][m].push(e);
+  });
+
+  const years=Object.keys(byYear).sort((a,b)=>b-a);
+  const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  let html='<div class="archive-wrap">';
+  years.forEach(year=>{
+    html+=`<div class="archive-year">
+      <div class="archive-year-label">${year}</div>
+      <div class="archive-month-grid">`;
+    for(let m=1;m<=12;m++){
+      const evs=byYear[year][m]||[];
+      const has=evs.length>0;
+      html+=`<button class="month-btn${has?' has':''}" onclick="toggleMonth(this,'${year}_${m}')" ${!has?'disabled':''}>
+        ${MONTHS[m-1]}${has?`<span class="month-count">${evs.length}</span>`:''}
+      </button>`;
+    }
+    html+=`</div>`; // month-grid
+
+    // 각 월별 공연 리스트 (숨겨진 상태)
+    for(let m=1;m<=12;m++){
+      const evs=byYear[year][m]||[];
+      if(!evs.length) continue;
+      evs.sort((a,b)=>new Date(a.date)-new Date(b.date));
+      html+=`<div class="month-list" id="month_${year}_${m}" style="display:none">`;
+      evs.forEach(e=>{html+=renderCard(e);});
+      html+=`</div>`;
+    }
+    html+=`</div>`; // year
+  });
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+function toggleMonth(btn, key){
+  const list=document.getElementById('month_'+key);
+  if(!list) return;
+  const isOpen=list.style.display!=='none';
+  // 같은 연도 내 다른 월 닫기
+  const yearBlock=btn.closest('.archive-year');
+  yearBlock.querySelectorAll('.month-list').forEach(l=>{ l.style.display='none'; });
+  yearBlock.querySelectorAll('.month-btn').forEach(b=>b.classList.remove('active'));
+  if(!isOpen){
+    list.style.display='flex';
+    btn.classList.add('active');
+  }
+}
 function renderStats(){
   const el=document.getElementById('mainContent');
 
