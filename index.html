@@ -707,42 +707,32 @@ function deleteEvent(id){
 
 /* ── load ── */
 function loadData(){
-  try{
-    const saved=localStorage.getItem(EVT_KEY);
-    if(saved){allEvents=JSON.parse(saved);renderAll();}
-  }catch(e){}
+  // 서버가 항상 진짜 원본 — 로컬 캐시 무시
+  localStorage.removeItem(EVT_KEY);
 
   const cbName='asCb_'+Date.now();
   const script=document.createElement('script');
   window[cbName]=function(json){
     delete window[cbName];
     try{document.head.removeChild(script);}catch(e){}
-    if(!json||!json.ok) return;
+    if(!json||!json.ok){ renderAll(); return; }
 
     const rows=json.data.events||[];
-    // 시트의 id 컬럼을 그대로 사용 — 순서 바뀌어도 안전
-    const serverEvents=rows
+    allEvents=rows
       .filter(r=>r.artist&&r.title&&r.date)
       .map(r=>({
-        id: r.id || (r.artist+'|'+r.date+'|'+r.title),
+        id: r.id||(r.artist+'|'+r.date+'|'+r.title),
         artist:r.artist, title:r.title, date:r.date,
         time:r.time||'', venue:r.venue||'', type:'concert',
       }));
 
-    // 서버 ID 목록
-    const serverIds=new Set(serverEvents.map(e=>e.id));
-    const serverKeys=new Set(serverEvents.map(e=>e.title+'|'+e.date));
-
-    // 로컬에서 직접 추가했지만 아직 서버에 없는 것만 유지
-    const localAdded=allEvents.filter(e=>
-      !serverIds.has(e.id) && !serverKeys.has(e.title+'|'+e.date)
-    );
-
-    allEvents=[...serverEvents,...localAdded];
     saveEvents();
     renderAll();
   };
-  script.onerror=()=>{try{document.head.removeChild(script);}catch(e){}};
+  script.onerror=()=>{
+    try{document.head.removeChild(script);}catch(e){}
+    renderAll();
+  };
   script.src=`${SCRIPT_URL}?action=all&callback=${cbName}&t=${Date.now()}`;
   document.head.appendChild(script);
 }
