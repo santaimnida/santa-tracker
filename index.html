@@ -447,6 +447,10 @@ function renderStats(){
   const activeSeg=window._statsSeg;
   const evs=byYear[activeYear]||[];
 
+    const uniqueArtists = new Set();
+    evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
+    const uniqueVenues = new Set(evs.filter(e=>e.venue).map(e=>e.venue));
+
   // header: 연도 밑줄 탭 + 총 공연수 작게
   let html=`<div class="stats-header">
     <div class="stats-year-tabs">`;
@@ -454,7 +458,7 @@ function renderStats(){
     html+=`<button class="stats-year-btn${y==activeYear?' active':''}" onclick="switchStatsYear('${y}')">${y}</button>`;
   });
   html+=`</div>
-    <div class="stats-total-inline">총 ${evs.length}회</div>
+    <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>
     <div class="stats-seg">
       <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
       <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
