@@ -117,29 +117,29 @@
   }
 
   /* ── stats tab ── */
-  .stats-content{padding:0 20px}
-
-  .year-block{margin-bottom:28px}
-  .year-title{
-    font-size:20px;font-weight:600;letter-spacing:-0.5px;
-    color:var(--text);padding:20px 0 14px;
-    border-bottom:0.5px solid var(--border-strong);
-    margin-bottom:12px;
+  .stats-year-tabs{display:flex;gap:6px;padding:16px 20px 0}
+  .stats-year-btn{
+    height:28px;padding:0 14px;border:1px solid transparent;
+    background:var(--surface2);border-radius:20px;
+    font-size:13px;font-weight:500;font-family:var(--font);
+    color:var(--text3);cursor:pointer;
+    transition:all 0.12s;
   }
-  .year-total{font-size:13px;font-weight:400;color:var(--text3);margin-left:8px}
+  .stats-year-btn.active{background:transparent;color:var(--text);border-color:var(--border-strong)}
 
-  .stat-row{
-    display:flex;align-items:center;
-    padding:11px 0;
-    border-bottom:0.5px solid var(--border);
-    gap:12px;
-  }
-  .stat-row:last-child{border-bottom:none}
+  .stats-total-row{display:flex;align-items:baseline;gap:5px;padding:18px 20px 4px}
+  .stats-total-num{font-size:36px;font-weight:600;letter-spacing:-1px;color:var(--text)}
+  .stats-total-label{font-size:14px;color:var(--text3)}
 
-  .stat-artist{font-size:14px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .stat-count{font-size:13px;font-weight:600;color:var(--text);flex-shrink:0}
-  .stat-bar-wrap{width:80px;height:4px;background:var(--surface2);border-radius:2px;flex-shrink:0}
-  .stat-bar{height:100%;border-radius:2px;background:var(--concert)}
+  .stats-section-title{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;padding:18px 20px 8px}
+  .stats-list{padding:0 20px}
+  .stats-row{display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);gap:10px}
+  .stats-row:last-child{border-bottom:none}
+  .stats-name{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stats-count{font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;min-width:24px;text-align:right}
+  .stats-bar-wrap{width:72px;height:3px;background:var(--surface2);border-radius:2px;flex-shrink:0}
+  .stats-bar{height:100%;border-radius:2px;background:var(--concert)}
+  .stats-bar.venue{background:var(--release)}
 
   /* ── empty ── */
   .empty{text-align:center;padding:64px 20px}
@@ -419,51 +419,76 @@ function toggleMonth(btn, key){
 }
 function renderStats(){
   const el=document.getElementById('mainContent');
-
-  // 지난 + 다가오는 모두 포함
-  const past = allEvents.filter(e=>daysUntil(e.date)<0);
+  const past=allEvents.filter(e=>daysUntil(e.date)<0);
   if(!past.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><div class="empty-t">아직 지난 공연이 없어요</div></div>`;
     return;
   }
 
-  // 연도별 그룹
   const byYear={};
   past.forEach(e=>{
     const y=new Date(e.date).getFullYear();
     (byYear[y]=byYear[y]||[]).push(e);
   });
-
-  // 연도 내림차순
   const years=Object.keys(byYear).sort((a,b)=>b-a);
+  if(!window._statsYear||!byYear[window._statsYear]) window._statsYear=years[0];
+  const activeYear=window._statsYear;
 
-  let html='<div class="stats-content">';
-  years.forEach(year=>{
-    const evs=byYear[year];
-  // 아티스트별 카운트 — 쉼표로 구분된 경우 각각 카운트
-  const counts={};
-  evs.forEach(e=>{
-    const artists=e.artist.split(',').map(a=>a.trim()).filter(Boolean);
-    artists.forEach(a=>{ counts[a]=(counts[a]||0)+1; });
+  // year tabs
+  let html=`<div class="stats-year-tabs">`;
+  years.forEach(y=>{
+    html+=`<button class="stats-year-btn${y==activeYear?' active':''}" onclick="switchStatsYear('${y}')">${y}</button>`;
   });
-    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-    const maxCount=sorted[0][1];
-    const total=evs.length;
+  html+=`</div>`;
 
-    html+=`<div class="year-block">
-      <div class="year-title">${year}<span class="year-total">총 ${total}회</span></div>`;
-    sorted.forEach(([artist,count])=>{
-      const pct=Math.round((count/maxCount)*100);
-      html+=`<div class="stat-row">
-        <div class="stat-artist">${artist}</div>
-        <div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%"></div></div>
-        <div class="stat-count">${count}회</div>
+  const evs=byYear[activeYear]||[];
+  html+=`<div class="stats-total-row"><span class="stats-total-num">${evs.length}</span><span class="stats-total-label">공연</span></div>`;
+
+  // 아티스트별
+  const artistCounts={};
+  evs.forEach(e=>{
+    e.artist.split(',').map(a=>a.trim()).filter(Boolean)
+      .forEach(a=>{ artistCounts[a]=(artistCounts[a]||0)+1; });
+  });
+  const artistSorted=Object.entries(artistCounts).sort((a,b)=>b[1]-a[1]);
+  const maxA=artistSorted[0]?.[1]||1;
+
+  html+=`<div class="stats-section-title">아티스트</div><div class="stats-list">`;
+  artistSorted.forEach(([name,count])=>{
+    const pct=Math.round((count/maxA)*100);
+    html+=`<div class="stats-row">
+      <div class="stats-name">${name}</div>
+      <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%"></div></div>
+      <div class="stats-count">${count}회</div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // 공연장별
+  const venueCounts={};
+  evs.forEach(e=>{ if(e.venue) venueCounts[e.venue]=(venueCounts[e.venue]||0)+1; });
+  const venueSorted=Object.entries(venueCounts).sort((a,b)=>b[1]-a[1]);
+
+  if(venueSorted.length){
+    const maxV=venueSorted[0][1];
+    html+=`<div class="stats-section-title">공연장</div><div class="stats-list">`;
+    venueSorted.forEach(([name,count])=>{
+      const pct=Math.round((count/maxV)*100);
+      html+=`<div class="stats-row">
+        <div class="stats-name">${name}</div>
+        <div class="stats-bar-wrap"><div class="stats-bar venue" style="width:${pct}%"></div></div>
+        <div class="stats-count">${count}회</div>
       </div>`;
     });
     html+=`</div>`;
-  });
-  html+='</div>';
+  }
+
   el.innerHTML=html;
+}
+
+function switchStatsYear(y){
+  window._statsYear=y;
+  renderStats();
 }
 
 /* ── add form ── */
