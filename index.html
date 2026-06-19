@@ -39,12 +39,11 @@
   .header-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;flex:1;cursor:pointer;user-select:none}
   .header-title:active{opacity:0.5}
 
+  .search-row{padding:0 20px 9px}
   .search-wrap{
     display:flex;align-items:center;background:var(--surface2);
-    border-radius:20px;padding:0 11px;gap:6px;height:30px;width:120px;
-    transition:width 0.2s ease;
+    border-radius:20px;padding:0 11px;gap:6px;height:30px;width:100%;
   }
-  .search-wrap.focused{width:170px}
   .search-wrap svg{color:var(--text3);flex-shrink:0}
   .search-input{width:100%;background:none;border:none;outline:none;font-size:13px;font-family:var(--font);color:var(--text)}
   .search-input::placeholder{color:var(--text3)}
@@ -226,26 +225,27 @@
 <header class="header">
   <div class="header-row">
     <span class="header-title" onclick="location.reload()">영Rock없는삶</span>
+    <button class="add-btn" onclick="openAdd()" aria-label="일정 추가">+</button>
+  </div>
+  <div class="filter-row">
+    <button class="f-tab active" onclick="setFilter(this,'upcoming')" data-f="upcoming">🎟️</button>
+    <button class="f-tab"        onclick="setFilter(this,'archive')"  data-f="archive">🎞️</button>
+    <button class="f-tab"        onclick="setFilter(this,'stats')"    data-f="stats">🌀</button>
+    <button class="f-tab"        onclick="setFilter(this,'all')"      data-f="all">🔭</button>
+  </div>
+  <div class="search-row" id="searchRow" style="display:none">
     <div class="search-wrap" id="searchWrap">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
         <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
         <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
       <input class="search-input" id="searchInput" placeholder="검색"
-        oninput="renderAll()"
-        onfocus="document.getElementById('searchWrap').classList.add('focused')"
-        onblur="onBlur()" autocomplete="off"/>
+        oninput="renderAll()" autocomplete="off"/>
     </div>
-    <button class="add-btn" onclick="openAdd()" aria-label="일정 추가">+</button>
-  </div>
-  <div class="filter-row">
-    <button class="f-tab active" onclick="setFilter(this,'all')"     data-f="all">전체</button>
-    <button class="f-tab"        onclick="setFilter(this,'archive')" data-f="archive">지난 일정</button>
-    <button class="f-tab"        onclick="setFilter(this,'stats')"   data-f="stats">통계</button>
   </div>
 </header>
 
-<div class="content">
+<div class="content" id="mainWrap">
   <div id="mainContent"></div>
 </div>
 
@@ -319,7 +319,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZEC6Rvzu11m_a0nibW
 const EVT_KEY    = 'ast_events';
 
 let allEvents = [];
-let curFilter = 'all';
+let curFilter = 'upcoming';
 
 /* ── utils ── */
 function daysUntil(d){
@@ -336,16 +336,21 @@ function toast(msg){
   el.textContent=msg;el.classList.add('show');
   clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2000);
 }
-function onBlur(){
-  document.getElementById('searchWrap').classList.remove('focused');
-  setTimeout(()=>{document.getElementById('searchInput').value='';renderAll();},150);
-}
+function onBlur(){}
 function saveEvents(){ try{localStorage.setItem(EVT_KEY,JSON.stringify(allEvents));}catch(e){} }
 
 /* ── filter ── */
 function setFilter(el,f){
   document.querySelectorAll('.f-tab').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active'); curFilter=f; renderAll();
+  el.classList.add('active');
+  curFilter=f;
+  const searchRow=document.getElementById('searchRow');
+  if(searchRow) searchRow.style.display=f==='all'?'block':'none';
+  if(f!=='all'){
+    const si=document.getElementById('searchInput');
+    if(si) si.value='';
+  }
+  renderAll();
 }
 
 function getFiltered(){
@@ -353,7 +358,8 @@ function getFiltered(){
   return allEvents.filter(e=>{
     const days=daysUntil(e.date);
     if(curFilter==='archive'){ if(days>=0) return false; }
-    else if(curFilter!=='stats'){ if(days<0) return false; }
+    else if(curFilter==='upcoming'){ if(days<0) return false; }
+    else if(curFilter==='all'){ /* show all */ }
     if(q&&!e.artist.toLowerCase().includes(q)&&!e.title.toLowerCase().includes(q)) return false;
     return true;
   }).sort((a,b)=>new Date(a.date)-new Date(b.date));
@@ -362,8 +368,7 @@ function getFiltered(){
 /* ── render ── */
 function renderAll(){
   if(curFilter==='stats'){ renderStats(); return; }
-  if(curFilter==='archive'){ renderArchive(); return; }
-  const filtered=getFiltered();
+  if(curFilter==='archive'){ renderArchive(); return; }  const filtered=getFiltered();
   const el=document.getElementById('mainContent');
   if(!filtered.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">🎤</div><div class="empty-t">공연이 없어요</div></div>`;
