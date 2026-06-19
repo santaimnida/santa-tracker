@@ -119,11 +119,12 @@
   .empty-t{font-size:14px;font-weight:500;color:var(--text3)}
 
   /* ── bottom sheet (add form) ── */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;display:none;align-items:flex-end}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;display:none;align-items:flex-end;justify-content:center}
   .overlay.open{display:flex}
   .bottom-panel{
     background:var(--surface);border-radius:20px 20px 0 0;
-    padding:20px 20px calc(20px + var(--safe-bottom));width:100%;
+    padding:20px 20px calc(20px + var(--safe-bottom));
+    width:100%;max-width:430px;
     animation:su .24s cubic-bezier(.34,1.4,.64,1);
   }
   @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
