@@ -11,6 +11,7 @@
     --border:rgba(0,0,0,0.08); --border-strong:rgba(0,0,0,0.11);
     --text:#1C1C1E; --text3:#8E8E93;
     --concert:#A8D1F0; --concert-bg:#EAF4FC;
+    --release:#D4E89A; --release-bg:#F5F7E8;
     --red:#FF3B30;
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
     --safe-top:env(safe-area-inset-top,0px);
@@ -147,8 +148,7 @@
   .stats-name{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;font-family:var(--font)}
   .stats-count{font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;min-width:24px;text-align:right;line-height:1}
   .stats-bar-wrap{width:80px;height:4px;background:var(--surface2);border-radius:2px;flex-shrink:0;overflow:hidden}
-  .stats-bar{height:100%;border-radius:2px;background:var(--concert);transition:width 0.3s ease}
-  .stats-bar.venue{background:#C8DFA8}
+  .stats-bar{height:100%;border-radius:2px;transition:width 0.3s ease}
 
   /* ── empty ── */
   .empty{text-align:center;padding:64px 20px}
@@ -414,10 +414,13 @@ function renderCard(e){
       <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="currentColor"/>
     </svg>${e.venue}</span>`:'';
 
+  const year = new Date(e.date).getFullYear();
+  const barColor = year === 2025 ? 'var(--release)' : year === 2027 ? '#AD88F8' : 'var(--concert)';
+
   return `<div class="card-wrap" id="wrap_${e.id}">
     <div class="event-card" onclick="toggleCardActions('${e.id}')">
       <div class="card-inner">
-        <div class="type-bar"></div>
+        <div class="type-bar" style="background:${barColor}"></div>
         <div class="card-info">
           <div class="card-top"><span class="card-artist">${e.artist}</span></div>
           <div class="card-title">${e.title}</div>
@@ -517,6 +520,7 @@ function renderStats(){
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
   const evs=byYear[activeYear]||[];
+  const barColor = activeYear == 2025 ? 'var(--release)' : activeYear == 2027 ? '#AD88F8' : 'var(--concert)';
 
     const uniqueArtists = new Set();
     evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
@@ -549,7 +553,7 @@ function renderStats(){
       const pct=Math.round((count/maxVal)*100);
       html+=`<div class="stats-row">
         <div class="stats-name">${name}</div>
-        <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%"></div></div>
+        <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%;background:${barColor}"></div></div>
         <div class="stats-count">${count}회</div>
       </div>`;
     });
@@ -565,7 +569,7 @@ function renderStats(){
         const pct=Math.round((count/maxVal)*100);
         html+=`<div class="stats-row">
           <div class="stats-name">${name}</div>
-          <div class="stats-bar-wrap"><div class="stats-bar venue" style="width:${pct}%"></div></div>
+          <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%;background:${barColor}"></div></div>
           <div class="stats-count">${count}회</div>
         </div>`;
       });
