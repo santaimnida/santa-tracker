@@ -66,7 +66,8 @@
   .f-tab.active{background:transparent;color:var(--text);border-color:var(--border-strong)}
 
   /* ── content ── */
-  .content{padding-top:92px;padding-bottom:calc(28px + var(--safe-bottom))}
+  .content{padding-top:92px;padding-bottom:calc(28px + var(--safe-bottom));transition:padding-top 0.15s}
+  .content.search-visible{padding-top:140px}
   .section-label{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;padding:20px 20px 8px}
   .event-list{display:flex;flex-direction:column;gap:8px;padding:0 20px}
 
@@ -345,7 +346,12 @@ function setFilter(el,f){
   el.classList.add('active');
   curFilter=f;
   const searchRow=document.getElementById('searchRow');
-  if(searchRow) searchRow.style.display=f==='all'?'block':'none';
+  const contentEl=document.getElementById('mainWrap');
+  if(searchRow){
+    const show=f==='all';
+    searchRow.style.display=show?'block':'none';
+    if(contentEl) contentEl.classList.toggle('search-visible', show);
+  }
   if(f!=='all'){
     const si=document.getElementById('searchInput');
     if(si) si.value='';
