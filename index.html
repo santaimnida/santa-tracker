@@ -72,7 +72,6 @@
   .event-list{display:flex;flex-direction:column;gap:8px;padding:0 20px}
 
   /* ── card ── */
-  .event-card{height:72px;background:var(--surface);border-radius:12px;border:0.5px solid var(--border-strong);overflow:hidden}
   .card-inner{display:flex;align-items:stretch;height:100%;padding:0 14px 0 12px;gap:11px}
   .type-bar{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch;background:var(--concert)}
   .card-info{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
@@ -196,6 +195,25 @@
     transition:opacity .16s,transform .16s;white-space:nowrap;pointer-events:none;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ── swipe to delete ── */
+  .card-wrap{position:relative;overflow:hidden;border-radius:12px}
+  .card-delete-bg{
+    position:absolute;right:0;top:0;bottom:0;
+    width:80px;background:#FF3B30;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:12px;font-weight:600;
+    border-radius:0 12px 12px 0;
+    pointer-events:none;
+  }
+  .event-card{
+    height:72px;background:var(--surface);
+    border-radius:12px;border:0.5px solid var(--border-strong);overflow:hidden;
+    position:relative;transition:transform 0.2s ease;cursor:pointer;
+    touch-action:pan-y;
+  }
+  .event-card.swiped{transform:translateX(-80px)}
+
 </style>
 </head>
 <body>
@@ -259,11 +277,43 @@
   </div>
 </div>
 
+<!-- ── Edit sheet ── -->
+<div class="overlay" id="editOverlay" onclick="closeEditIfOut(event)">
+  <div class="bottom-panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title">공연 수정</div>
+    <input type="hidden" id="eId"/>
+    <div class="form-row">
+      <div class="form-label">아티스트</div>
+      <input class="form-input" id="eArtist" placeholder="아티스트 이름"/>
+    </div>
+    <div class="form-row">
+      <div class="form-label">공연명</div>
+      <input class="form-input" id="eTitle" placeholder="공연 제목"/>
+    </div>
+    <div class="form-row-half">
+      <div class="form-row">
+        <div class="form-label">날짜</div>
+        <input class="form-input" id="eDate" type="date"/>
+      </div>
+      <div class="form-row">
+        <div class="form-label">시간 (선택)</div>
+        <input class="form-input" id="eTime" type="time"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">장소 (선택)</div>
+      <input class="form-input" id="eVenue" placeholder="공연장 이름"/>
+    </div>
+    <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9HiOyFFSP49O8mqiGzmwrAh7cdu4gd1vv5IsjtpqTkmKVZzY0tryZ5VV6Q9Go0RFrxg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPC2r39Rc9EE9HLglBVegFiaroSzTgYMge-7CpkBXx7S2ZZhQir50gbcCTV-3sCTsWhw/exec';
 const EVT_KEY    = 'ast_events';
 
 let allEvents = [];
@@ -351,15 +401,24 @@ function renderCard(e){
       <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="currentColor"/>
     </svg>${e.venue}</span>`:'';
 
-  return `<div class="event-card"><div class="card-inner">
-    <div class="type-bar"></div>
-    <div class="card-info">
-      <div class="card-top"><span class="card-artist">${e.artist}</span></div>
-      <div class="card-title">${e.title}</div>
-      <div class="card-meta">${dateMeta}${venueMeta}</div>
+  return `<div class="card-wrap" id="wrap_${e.id}">
+    <div class="card-delete-bg" onclick="deleteEvent('${e.id}')">삭제</div>
+    <div class="event-card" id="card_${e.id}"
+      onclick="openEdit('${e.id}')"
+      ontouchstart="swipeStart(event,'${e.id}')"
+      ontouchmove="swipeMove(event,'${e.id}')"
+      ontouchend="swipeEnd(event,'${e.id}')">
+      <div class="card-inner">
+        <div class="type-bar"></div>
+        <div class="card-info">
+          <div class="card-top"><span class="card-artist">${e.artist}</span></div>
+          <div class="card-title">${e.title}</div>
+          <div class="card-meta">${dateMeta}${venueMeta}</div>
+        </div>
+        <div class="card-right"><span class="${cc}">${ct}</span></div>
+      </div>
     </div>
-    <div class="card-right"><span class="${cc}">${ct}</span></div>
-  </div></div>`;
+  </div>`;
 }
 
 /* ── archive render: year → month grid → concert list ── */
@@ -552,6 +611,100 @@ async function submitAdd(){
   }catch(e){}
 }
 
+/* ── swipe to delete ── */
+const swipeState={};
+function swipeStart(ev,id){
+  const t=ev.touches[0];
+  swipeState[id]={x:t.clientX,y:t.clientY,moved:false};
+}
+function swipeMove(ev,id){
+  const s=swipeState[id]; if(!s) return;
+  const dx=ev.touches[0].clientX-s.x;
+  const dy=Math.abs(ev.touches[0].clientY-s.y);
+  if(dy>10&&!s.moved) return; // vertical scroll
+  if(dx<-8){
+    s.moved=true;
+    ev.preventDefault();
+    const card=document.getElementById('card_'+id);
+    if(card) card.style.transform=`translateX(${Math.max(dx,-80)}px)`;
+  }
+}
+function swipeEnd(ev,id){
+  const s=swipeState[id]; if(!s) return;
+  const card=document.getElementById('card_'+id);
+  if(!card) return;
+  const dx=ev.changedTouches[0].clientX-s.x;
+  if(dx<-40){
+    card.style.transition='transform 0.18s ease';
+    card.style.transform='translateX(-80px)';
+    card.classList.add('swiped');
+  } else {
+    card.style.transition='transform 0.18s ease';
+    card.style.transform='';
+    card.classList.remove('swiped');
+  }
+  delete swipeState[id];
+}
+
+/* ── edit ── */
+function openEdit(id){
+  // 스와이프 상태면 수정 열지 않기
+  const card=document.getElementById('card_'+id);
+  if(card&&card.classList.contains('swiped')){
+    card.style.transition='transform 0.18s ease';
+    card.style.transform='';
+    card.classList.remove('swiped');
+    return;
+  }
+  const e=allEvents.find(ev=>ev.id===id);
+  if(!e) return;
+  document.getElementById('eId').value    = e.id;
+  document.getElementById('eArtist').value= e.artist;
+  document.getElementById('eTitle').value = e.title;
+  document.getElementById('eDate').value  = e.date;
+  document.getElementById('eTime').value  = e.time||'';
+  document.getElementById('eVenue').value = e.venue||'';
+  document.getElementById('editOverlay').classList.add('open');
+}
+function closeEditIfOut(ev){ if(ev.target===document.getElementById('editOverlay')) document.getElementById('editOverlay').classList.remove('open'); }
+
+function submitEdit(){
+  const id     = document.getElementById('eId').value;
+  const artist = document.getElementById('eArtist').value.trim();
+  const title  = document.getElementById('eTitle').value.trim();
+  const date   = document.getElementById('eDate').value;
+  const time   = document.getElementById('eTime').value;
+  const venue  = document.getElementById('eVenue').value.trim();
+  if(!artist){toast('아티스트를 입력해주세요');return;}
+  if(!title) {toast('공연명을 입력해주세요');return;}
+  if(!date)  {toast('날짜를 선택해주세요');return;}
+
+  const idx=allEvents.findIndex(e=>e.id===id);
+  if(idx===-1) return;
+  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue};
+  saveEvents(); renderAll();
+  document.getElementById('editOverlay').classList.remove('open');
+  toast('수정됐어요!');
+
+  // 시트 백업
+  try{
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'edit',event:allEvents[idx]})});
+  }catch(e){}
+}
+
+/* ── delete ── */
+function deleteEvent(id){
+  if(!confirm('이 공연을 삭제할까요?')) return;
+  allEvents=allEvents.filter(e=>e.id!==id);
+  saveEvents(); renderAll();
+  toast('삭제됐어요');
+  try{
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'delete',event_id:id})});
+  }catch(e){}
+}
+
 /* ── load ── */
 function loadData(){
   try{
@@ -567,19 +720,22 @@ function loadData(){
     if(!json||!json.ok) return;
 
     const rows=json.data.events||[];
+    // 시트의 id 컬럼을 그대로 사용 — 순서 바뀌어도 안전
     const serverEvents=rows
       .filter(r=>r.artist&&r.title&&r.date)
-      .map((r,i)=>({
-        id:'sheet_'+i,
-        artist:r.artist,title:r.title,date:r.date,
-        time:r.time||'',venue:r.venue||'',type:'concert',
+      .map(r=>({
+        id: r.id || (r.artist+'|'+r.date+'|'+r.title),
+        artist:r.artist, title:r.title, date:r.date,
+        time:r.time||'', venue:r.venue||'', type:'concert',
       }));
 
-    // 로컬에서 직접 추가한 것만 유지 (sheet_ 아닌 것)
-    // 단, 서버에 이미 같은 내용이 있으면 제외 (title+date로 중복 체크)
+    // 서버 ID 목록
+    const serverIds=new Set(serverEvents.map(e=>e.id));
     const serverKeys=new Set(serverEvents.map(e=>e.title+'|'+e.date));
+
+    // 로컬에서 직접 추가했지만 아직 서버에 없는 것만 유지
     const localAdded=allEvents.filter(e=>
-      !e.id.startsWith('sheet_') && !serverKeys.has(e.title+'|'+e.date)
+      !serverIds.has(e.id) && !serverKeys.has(e.title+'|'+e.date)
     );
 
     allEvents=[...serverEvents,...localAdded];
