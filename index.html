@@ -122,7 +122,7 @@
   /* 연도: 밑줄 스타일 */
   .stats-year-tabs{display:flex;gap:20px;margin-bottom:4px}
   .stats-year-btn{
-    background:none;border:none;padding:0 0 6px;
+    background:none;border:none;padding:0 0 3px;
     font-size:16px;font-weight:600;font-family:var(--font);
     color:var(--text3);cursor:pointer;
     border-bottom:2px solid transparent;
@@ -130,7 +130,7 @@
   }
   .stats-year-btn.active{color:var(--text);border-bottom-color:var(--text)}
 
-  .stats-total-inline{font-size:12px;color:var(--text3);margin-top:2px;margin-bottom:14px}
+  .stats-total-inline{font-size:12px;color:var(--text3);margin-top:10px;margin-bottom:14px}
 
   /* 아티스트 / 공연장 세그먼트 */
   .stats-seg{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin-top:14px}
@@ -143,10 +143,10 @@
   .stats-seg-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
 
   .stats-list{padding:6px 20px 0}
-  .stats-row{display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);gap:10px}
+  .stats-row{display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);gap:10px;min-height:40px}
   .stats-row:last-child{border-bottom:none}
-  .stats-name{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .stats-count{font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;min-width:24px;text-align:right}
+  .stats-name{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;font-family:var(--font)}
+  .stats-count{font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;min-width:24px;text-align:right;line-height:1}
   .stats-bar-wrap{width:80px;height:4px;background:var(--surface2);border-radius:2px;flex-shrink:0;overflow:hidden}
   .stats-bar{height:100%;border-radius:2px;background:var(--concert);transition:width 0.3s ease}
   .stats-bar.venue{background:#C8DFA8}
