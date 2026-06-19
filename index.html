@@ -9,10 +9,9 @@
   :root {
     --bg:#FFFFFF; --surface:#FFFFFF; --surface2:#F2F2F7;
     --border:rgba(0,0,0,0.08); --border-strong:rgba(0,0,0,0.11);
-    --text:#1C1C1E; --text3:#8E8E93; --accent:#007AFF;
+    --text:#1C1C1E; --text3:#8E8E93;
     --concert:#A8D1F0; --concert-bg:#EAF4FC;
-    --release:#D4E89A; --release-bg:#F5F7E8;
-    --green:#34C759; --red:#FF3B30; --red-bg:rgba(255,59,48,0.10);
+    --red:#FF3B30;
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
     --safe-top:env(safe-area-inset-top,0px);
     --safe-bottom:env(safe-area-inset-bottom,0px);
@@ -21,12 +20,10 @@
     --bg:#000; --surface:#1C1C1E; --surface2:#2C2C2E;
     --border:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.11);
     --text:#FFF; --text3:#8E8E93;
-    --concert-bg:rgba(168,209,240,0.15); --release-bg:rgba(212,232,154,0.15);
-    --red-bg:rgba(255,59,48,0.13);
+    --concert-bg:rgba(168,209,240,0.15);
   }}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-
   .wrap{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
 
   /* ── header ── */
@@ -38,14 +35,8 @@
     padding-top:var(--safe-top);
   }
   @media(prefers-color-scheme:dark){.header{background:rgba(0,0,0,0.9)}}
-
   .header-row{display:flex;align-items:center;padding:13px 20px 8px;gap:10px}
-
-  .header-title{
-    font-size:17px;font-weight:600;letter-spacing:-0.3px;flex:1;
-    cursor:pointer;-webkit-tap-highlight-color:transparent;
-    user-select:none;
-  }
+  .header-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;flex:1;cursor:pointer;user-select:none}
   .header-title:active{opacity:0.5}
 
   .search-wrap{
@@ -58,13 +49,10 @@
   .search-input{width:100%;background:none;border:none;outline:none;font-size:13px;font-family:var(--font);color:var(--text)}
   .search-input::placeholder{color:var(--text3)}
 
-  /* add button */
   .add-btn{
-    width:30px;height:30px;border-radius:50%;
-    background:var(--surface2);border:none;
+    width:30px;height:30px;border-radius:50%;background:var(--surface2);border:none;
     cursor:pointer;display:flex;align-items:center;justify-content:center;
-    color:var(--text3);font-size:20px;line-height:1;flex-shrink:0;
-    transition:opacity 0.1s;
+    color:var(--text3);font-size:20px;line-height:1;flex-shrink:0;transition:opacity 0.1s;
   }
   .add-btn:active{opacity:0.5}
 
@@ -80,45 +68,58 @@
 
   /* ── content ── */
   .content{padding-top:92px;padding-bottom:calc(28px + var(--safe-bottom))}
-
   .section-label{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;padding:20px 20px 8px}
   .event-list{display:flex;flex-direction:column;gap:8px;padding:0 20px}
 
   /* ── card ── */
   .event-card{height:72px;background:var(--surface);border-radius:12px;border:0.5px solid var(--border-strong);overflow:hidden}
   .card-inner{display:flex;align-items:stretch;height:100%;padding:0 14px 0 12px;gap:11px}
-
-  .type-bar{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch}
-  .bar-concert{background:var(--concert)}
-  .bar-release{background:var(--release)}
-
+  .type-bar{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch;background:var(--concert)}
   .card-info{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
-  .card-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
-  .card-artist{font-size:10px;color:var(--text3);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-top{display:flex;align-items:center;margin-bottom:2px}
+  .card-artist{font-size:10px;color:var(--text3);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .card-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-0.2px;line-height:1.35;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-meta{display:flex;gap:8px;overflow:hidden}
   .meta-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);white-space:nowrap;line-height:1;position:relative;top:1px}
   .meta-item svg{flex-shrink:0}
 
-  .card-right{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0 12px;flex-shrink:0;width:34px;min-height:72px}
-
+  .card-right{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:34px}
   .d-chip{font-size:10px;font-weight:600;padding:2px 5px;border-radius:20px;background:var(--surface2);color:var(--text3);white-space:nowrap;text-align:center;min-width:30px}
   .d-chip.soon{background:#FEF0EF;color:#E07070}
   .d-chip.dday{background:#fff;color:var(--text);border:0.5px solid var(--border-strong)}
   .d-chip.past{opacity:0.38}
 
-  .check-circle{width:15px;height:15px;border-radius:50%;border:0.75px solid #C8C8C8;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.13s;flex-shrink:0}
-  .check-circle:active{transform:scale(0.82)}
-  .check-circle.going{background:#E8E8E8;border-color:#B0B0B0}
-  .check-circle svg{opacity:0;transition:opacity 0.1s}
-  .check-circle.going svg{opacity:1}
-  .check-placeholder{width:15px;height:15px;flex-shrink:0}
+  /* ── stats tab ── */
+  .stats-content{padding:0 20px}
 
+  .year-block{margin-bottom:28px}
+  .year-title{
+    font-size:20px;font-weight:600;letter-spacing:-0.5px;
+    color:var(--text);padding:20px 0 14px;
+    border-bottom:0.5px solid var(--border-strong);
+    margin-bottom:12px;
+  }
+  .year-total{font-size:13px;font-weight:400;color:var(--text3);margin-left:8px}
+
+  .stat-row{
+    display:flex;align-items:center;
+    padding:11px 0;
+    border-bottom:0.5px solid var(--border);
+    gap:12px;
+  }
+  .stat-row:last-child{border-bottom:none}
+
+  .stat-artist{font-size:14px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stat-count{font-size:13px;font-weight:600;color:var(--text);flex-shrink:0}
+  .stat-bar-wrap{width:80px;height:4px;background:var(--surface2);border-radius:2px;flex-shrink:0}
+  .stat-bar{height:100%;border-radius:2px;background:var(--concert)}
+
+  /* ── empty ── */
   .empty{text-align:center;padding:64px 20px}
   .empty-icon{font-size:32px;margin-bottom:10px;opacity:0.3}
   .empty-t{font-size:14px;font-weight:500;color:var(--text3)}
 
-  /* ── bottom sheet (add form) ── */
+  /* ── bottom sheet ── */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;display:none;align-items:flex-end;justify-content:center}
   .overlay.open{display:flex}
   .bottom-panel{
@@ -128,7 +129,6 @@
     animation:su .24s cubic-bezier(.34,1.4,.64,1);
   }
   @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
-
   .panel-handle{width:34px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 16px}
   .panel-title{font-size:16px;font-weight:600;margin-bottom:16px}
 
@@ -140,15 +140,6 @@
     color:var(--text);outline:none;
   }
   .form-input:focus{border-color:rgba(0,0,0,0.3)}
-
-  .type-toggle{display:flex;gap:0;border-radius:10px;overflow:hidden;border:0.5px solid var(--border-strong)}
-  .type-btn{
-    flex:1;height:36px;border:none;background:var(--surface2);
-    font-size:13px;font-weight:500;font-family:var(--font);
-    color:var(--text3);cursor:pointer;transition:all 0.12s;
-  }
-  .type-btn.active{background:var(--surface);color:var(--text);font-weight:600}
-
   .form-row-half{display:flex;gap:10px;margin-bottom:12px}
   .form-row-half .form-row{flex:1;margin-bottom:0}
 
@@ -165,8 +156,7 @@
     background:rgba(28,28,30,0.9);color:#fff;
     font-size:13px;font-weight:500;padding:8px 16px;
     border-radius:20px;z-index:400;opacity:0;
-    transition:opacity .16s,transform .16s;
-    white-space:nowrap;pointer-events:none;
+    transition:opacity .16s,transform .16s;white-space:nowrap;pointer-events:none;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
@@ -191,9 +181,8 @@
   </div>
   <div class="filter-row">
     <button class="f-tab active" onclick="setFilter(this,'all')"     data-f="all">전체</button>
-    <button class="f-tab"        onclick="setFilter(this,'concert')" data-f="concert">공연</button>
-    <button class="f-tab"        onclick="setFilter(this,'release')" data-f="release">발매</button>
     <button class="f-tab"        onclick="setFilter(this,'archive')" data-f="archive">지난 일정</button>
+    <button class="f-tab"        onclick="setFilter(this,'stats')"   data-f="stats">통계</button>
   </div>
 </header>
 
@@ -205,26 +194,16 @@
 <div class="overlay" id="overlay" onclick="closeIfOut(event)">
   <div class="bottom-panel">
     <div class="panel-handle"></div>
-    <div class="panel-title">일정 추가</div>
-
-    <div class="form-row">
-      <div class="form-label">구분</div>
-      <div class="type-toggle">
-        <button class="type-btn active" onclick="setType(this,'concert')" id="typeConcert">공연</button>
-        <button class="type-btn"        onclick="setType(this,'release')" id="typeRelease">발매</button>
-      </div>
-    </div>
+    <div class="panel-title">공연 추가</div>
 
     <div class="form-row">
       <div class="form-label">아티스트</div>
       <input class="form-input" id="fArtist" placeholder="아티스트 이름"/>
     </div>
-
     <div class="form-row">
-      <div class="form-label">제목</div>
-      <input class="form-input" id="fTitle" placeholder="공연 / 발매 제목"/>
+      <div class="form-label">공연명</div>
+      <input class="form-input" id="fTitle" placeholder="공연 제목"/>
     </div>
-
     <div class="form-row-half">
       <div class="form-row">
         <div class="form-label">날짜</div>
@@ -232,15 +211,13 @@
       </div>
       <div class="form-row">
         <div class="form-label">시간 (선택)</div>
-        <input class="form-input" id="fTime" type="time" placeholder="--:--"/>
+        <input class="form-input" id="fTime" type="time"/>
       </div>
     </div>
-
     <div class="form-row">
       <div class="form-label">장소 (선택)</div>
       <input class="form-input" id="fVenue" placeholder="공연장 이름"/>
     </div>
-
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
 </div>
@@ -250,89 +227,56 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9HiOyFFSP49O8mqiGzmwrAh7cdu4gd1vv5IsjtpqTkmKVZzY0tryZ5VV6Q9Go0RFrxg/exec';
-const ATT_KEY    = 'ast_att';
 const EVT_KEY    = 'ast_events';
 
 let allEvents = [];
-let attended  = {};
 let curFilter = 'all';
-let formType  = 'concert';
 
 /* ── utils ── */
 function daysUntil(d){
   const now = new Date();
-  const kstOffset = 9 * 60;
-  const localOffset = now.getTimezoneOffset();
-  const kstNow = new Date(now.getTime() + (kstOffset + localOffset) * 60000);
+  const kstNow = new Date(now.getTime() + (9*60 + now.getTimezoneOffset())*60000);
   kstNow.setHours(0,0,0,0);
-  const target = new Date(d + 'T00:00:00+09:00');
-  return Math.ceil((target - kstNow) / 86400000);
+  return Math.ceil((new Date(d+'T00:00:00+09:00') - kstNow) / 86400000);
 }
-function fmtDate(d){
-  return new Date(d).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-}
+function fmtDate(d){ return new Date(d).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}); }
 function fmtTime(t){ return t ? String(t).slice(0,5) : ''; }
-function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function toast(msg){
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2000);
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2000);
 }
 function onBlur(){
   document.getElementById('searchWrap').classList.remove('focused');
-  setTimeout(()=>{ document.getElementById('searchInput').value=''; renderAll(); }, 150);
+  setTimeout(()=>{document.getElementById('searchInput').value='';renderAll();},150);
 }
-
-/* ── local storage ── */
-function saveEvents(){ try{ localStorage.setItem(EVT_KEY, JSON.stringify(allEvents)); }catch(e){} }
-function loadLocalAtt(){ try{ return JSON.parse(localStorage.getItem(ATT_KEY)||'{}'); }catch(e){ return {}; } }
-function saveLocalAtt(){ try{ localStorage.setItem(ATT_KEY, JSON.stringify(attended)); }catch(e){} }
-
-/* ── attend ── */
-async function toggleGoing(id, ev){
-  ev.stopPropagation();
-  const next = attended[id] === 'going' ? '' : 'going';
-  if(next) attended[id] = 'going'; else delete attended[id];
-  saveLocalAtt(); renderAll();
-  try {
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'attend', event_id: id, status: next })
-    });
-  } catch(e){}
-}
+function saveEvents(){ try{localStorage.setItem(EVT_KEY,JSON.stringify(allEvents));}catch(e){} }
 
 /* ── filter ── */
-function setFilter(el, f){
+function setFilter(el,f){
   document.querySelectorAll('.f-tab').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active'); curFilter = f; renderAll();
+  el.classList.add('active'); curFilter=f; renderAll();
 }
+
 function getFiltered(){
-  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
   return allEvents.filter(e=>{
-    const days = daysUntil(e.date);
-    if(curFilter === 'archive'){
-      if(days >= 0) return false;
-    } else {
-      if(days < 0) return false;
-      if(curFilter==='concert' && e.type!=='concert') return false;
-      if(curFilter==='release' && e.type!=='release') return false;
-    }
-    if(q && !e.artist.toLowerCase().includes(q) && !e.title.toLowerCase().includes(q)) return false;
+    const days=daysUntil(e.date);
+    if(curFilter==='archive'){ if(days>=0) return false; }
+    else if(curFilter!=='stats'){ if(days<0) return false; }
+    if(q&&!e.artist.toLowerCase().includes(q)&&!e.title.toLowerCase().includes(q)) return false;
     return true;
-  }).sort((a,b)=>{
-    if(curFilter==='archive') return new Date(a.date)-new Date(b.date);
-    return new Date(a.date)-new Date(b.date);
-  });
+  }).sort((a,b)=>new Date(a.date)-new Date(b.date));
 }
 
 /* ── render ── */
 function renderAll(){
-  const filtered = getFiltered();
-  const el = document.getElementById('mainContent');
+  if(curFilter==='stats'){ renderStats(); return; }
+  const filtered=getFiltered();
+  const el=document.getElementById('mainContent');
   if(!filtered.length){
-    el.innerHTML=`<div class="empty"><div class="empty-icon">🎵</div><div class="empty-t">일정이 없어요</div></div>`;
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🎤</div><div class="empty-t">공연이 없어요</div></div>`;
     return;
   }
   const groups={};
@@ -352,8 +296,6 @@ function renderAll(){
 
 function renderCard(e){
   const days=daysUntil(e.date);
-  const isCon=e.type==='concert';
-  const isGoing=attended[e.id]==='going';
   let cc='d-chip',ct='';
   if(days===0){cc='d-chip dday';ct='🎉';}
   else if(days>0&&days<=7){cc='d-chip soon';ct=`D-${days}`;}
@@ -371,133 +313,141 @@ function renderCard(e){
       <path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.485-2.015-4.5-4.5-4.5zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="currentColor"/>
     </svg>${e.venue}</span>`:'';
 
-  const checkEl=isCon
-    ?`<div class="check-circle${isGoing?' going':''}" onclick="toggleGoing('${e.id}',event)">
-        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-          <path d="M1 4l2 2 4-4" stroke="#888" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>`
-    :`<div class="check-placeholder"></div>`;
-
   return `<div class="event-card"><div class="card-inner">
-    <div class="type-bar ${isCon?'bar-concert':'bar-release'}"></div>
+    <div class="type-bar"></div>
     <div class="card-info">
       <div class="card-top"><span class="card-artist">${e.artist}</span></div>
       <div class="card-title">${e.title}</div>
       <div class="card-meta">${dateMeta}${venueMeta}</div>
     </div>
-    <div class="card-right">
-      <span class="${cc}">${ct}</span>
-      ${checkEl}
-    </div>
+    <div class="card-right"><span class="${cc}">${ct}</span></div>
   </div></div>`;
+}
+
+/* ── stats ── */
+function renderStats(){
+  const el=document.getElementById('mainContent');
+
+  // 지난 + 다가오는 모두 포함
+  const past = allEvents.filter(e=>daysUntil(e.date)<0);
+  if(!past.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><div class="empty-t">아직 지난 공연이 없어요</div></div>`;
+    return;
+  }
+
+  // 연도별 그룹
+  const byYear={};
+  past.forEach(e=>{
+    const y=new Date(e.date).getFullYear();
+    (byYear[y]=byYear[y]||[]).push(e);
+  });
+
+  // 연도 내림차순
+  const years=Object.keys(byYear).sort((a,b)=>b-a);
+
+  let html='<div class="stats-content">';
+  years.forEach(year=>{
+    const evs=byYear[year];
+    // 아티스트별 카운트
+    const counts={};
+    evs.forEach(e=>{ counts[e.artist]=(counts[e.artist]||0)+1; });
+    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const maxCount=sorted[0][1];
+    const total=evs.length;
+
+    html+=`<div class="year-block">
+      <div class="year-title">${year}<span class="year-total">총 ${total}회</span></div>`;
+    sorted.forEach(([artist,count])=>{
+      const pct=Math.round((count/maxCount)*100);
+      html+=`<div class="stat-row">
+        <div class="stat-artist">${artist}</div>
+        <div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%"></div></div>
+        <div class="stat-count">${count}회</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
 }
 
 /* ── add form ── */
 function openAdd(){
-  // 오늘 날짜 기본값
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  const dd = String(today.getDate()).padStart(2,'0');
-  document.getElementById('fDate').value = `${yyyy}-${mm}-${dd}`;
-  document.getElementById('fArtist').value = '';
-  document.getElementById('fTitle').value  = '';
-  document.getElementById('fTime').value   = '';
-  document.getElementById('fVenue').value  = '';
-  setType(document.getElementById('typeConcert'), 'concert');
+  const today=new Date();
+  const yyyy=today.getFullYear();
+  const mm=String(today.getMonth()+1).padStart(2,'0');
+  const dd=String(today.getDate()).padStart(2,'0');
+  document.getElementById('fDate').value=`${yyyy}-${mm}-${dd}`;
+  document.getElementById('fArtist').value='';
+  document.getElementById('fTitle').value='';
+  document.getElementById('fTime').value='';
+  document.getElementById('fVenue').value='';
   document.getElementById('overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('fArtist').focus(), 300);
+  setTimeout(()=>document.getElementById('fArtist').focus(),300);
 }
-
 function closeIfOut(e){ if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); }
 
-function setType(el, type){
-  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  formType = type;
-}
-
 async function submitAdd(){
-  const artist = document.getElementById('fArtist').value.trim();
-  const title  = document.getElementById('fTitle').value.trim();
-  const date   = document.getElementById('fDate').value;
-  const time   = document.getElementById('fTime').value;
-  const venue  = document.getElementById('fVenue').value.trim();
+  const artist=document.getElementById('fArtist').value.trim();
+  const title =document.getElementById('fTitle').value.trim();
+  const date  =document.getElementById('fDate').value;
+  const time  =document.getElementById('fTime').value;
+  const venue =document.getElementById('fVenue').value.trim();
+  if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fArtist').focus();return;}
+  if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
+  if(!date)  {toast('날짜를 선택해주세요');return;}
 
-  if(!artist){ toast('아티스트를 입력해주세요'); document.getElementById('fArtist').focus(); return; }
-  if(!title) { toast('제목을 입력해주세요');    document.getElementById('fTitle').focus();  return; }
-  if(!date)  { toast('날짜를 선택해주세요');    return; }
-
-  const newEvent = { id: genId(), artist, title, date, time, venue, type: formType };
-
-  // 로컬에 바로 추가
+  const newEvent={id:genId(),artist,title,date,time,venue,type:'concert'};
   allEvents.push(newEvent);
   saveEvents();
   renderAll();
   document.getElementById('overlay').classList.remove('open');
-  toast('일정이 추가됐어요!');
+  toast('공연이 추가됐어요!');
 
-  // 시트에 백업
   try {
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
+    await fetch(SCRIPT_URL,{
+      method:'POST',mode:'no-cors',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'add', event: newEvent })
+      body:JSON.stringify({action:'add',event:newEvent})
     });
-  } catch(e){}
+  }catch(e){}
 }
 
-/* ── load from script (JSONP) ── */
+/* ── load ── */
 function loadData(){
-  // 로컬 먼저
-  attended = loadLocalAtt();
-  try {
-    const saved = localStorage.getItem(EVT_KEY);
-    if(saved){ allEvents = JSON.parse(saved); renderAll(); }
-  } catch(e){}
+  try{
+    const saved=localStorage.getItem(EVT_KEY);
+    if(saved){allEvents=JSON.parse(saved);renderAll();}
+  }catch(e){}
 
-  // 서버에서 최신 동기화
-  const cbName = 'asCb_' + Date.now();
-  const script = document.createElement('script');
-  window[cbName] = function(json){
+  const cbName='asCb_'+Date.now();
+  const script=document.createElement('script');
+  window[cbName]=function(json){
     delete window[cbName];
-    document.head.removeChild(script);
+    try{document.head.removeChild(script);}catch(e){}
     if(!json||!json.ok) return;
 
-    const rows = json.data.events||[];
-    const serverAtt = {};
-    (json.data.attended||[]).forEach(a=>{ if(a.event_id&&a.status) serverAtt[a.event_id]=a.status; });
-
-    // 서버 데이터를 기반으로, 로컬에서 추가한 항목은 유지
-    const serverIds = new Set(rows.map((_,i)=> `sheet_${i}`));
-    const localOnly = allEvents.filter(e => !e.id.startsWith('sheet_') && e.id.length < 20 === false);
-
-    allEvents = rows
+    const rows=json.data.events||[];
+    const serverEvents=rows
       .filter(r=>r.artist&&r.title&&r.date)
       .map((r,i)=>({
-        id: `sheet_${i}`,
-        artist: r.artist, title: r.title, date: r.date,
-        time: r.time||'', venue: r.venue||'',
-        type: (r.type||'concert').toLowerCase(),
+        id:'sheet_'+i,
+        artist:r.artist,title:r.title,date:r.date,
+        time:r.time||'',venue:r.venue||'',type:'concert',
       }));
 
-    // 로컬에서 직접 추가한 항목 (sheet_ 아닌 것들) 합치기
-    const localAdded = JSON.parse(localStorage.getItem(EVT_KEY)||'[]')
-      .filter(e => !e.id.startsWith('sheet_'));
-    allEvents = [...allEvents, ...localAdded];
-
-    attended = {...loadLocalAtt(), ...serverAtt};
-    saveLocalAtt();
+    // 로컬에서 직접 추가한 것 유지
+    const localAdded=allEvents.filter(e=>!e.id.startsWith('sheet_'));
+    allEvents=[...serverEvents,...localAdded];
     saveEvents();
     renderAll();
   };
-  script.onerror = ()=>{ try{document.head.removeChild(script);}catch(e){} };
-  script.src = `${SCRIPT_URL}?action=all&callback=${cbName}&t=${Date.now()}`;
+  script.onerror=()=>{try{document.head.removeChild(script);}catch(e){}};
+  script.src=`${SCRIPT_URL}?action=all&callback=${cbName}&t=${Date.now()}`;
   document.head.appendChild(script);
 }
 
-window.addEventListener('DOMContentLoaded', loadData);
+window.addEventListener('DOMContentLoaded',loadData);
 </script>
 </body>
 </html>
