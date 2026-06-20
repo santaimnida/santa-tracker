@@ -418,7 +418,7 @@ function renderCard(e){
   const barColor = year === 2025 ? 'var(--release)'
                  : year === 2027 ? '#AD88F8'
                  : year === 2024 ? '#FFAFA2'
-                 : year === 2023 ? '#A2FFC9'
+                 : year === 2023 ? '#FFFB8F'
                  : 'var(--concert)';
 
   return `<div class="card-wrap" id="wrap_${e.id}">
@@ -527,7 +527,7 @@ function renderStats(){
   const barColor = activeYear == 2025 ? 'var(--release)'
                  : activeYear == 2027 ? '#AD88F8'
                  : activeYear == 2024 ? '#FFAFA2'
-                 : activeYear == 2023 ? '#A2FFC9'
+                 : activeYear == 2023 ? '#FFFB8F'
                  : 'var(--concert)';
 
     const uniqueArtists = new Set();
