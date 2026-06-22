@@ -222,6 +222,25 @@
   .card-action-btn.delete{color:#FF3B30;border-right:0.5px solid var(--border)}
   .card-action-btn.edit{color:var(--text)}
 
+
+  /* ── autocomplete dropdown ── */
+  .ac-wrap{position:relative}
+  .ac-dropdown{
+    position:absolute;top:calc(100% + 4px);left:0;right:0;
+    background:var(--surface);border:0.5px solid var(--border-strong);
+    border-radius:10px;z-index:500;overflow:hidden;
+    box-shadow:0 4px 16px rgba(0,0,0,0.10);
+    display:none;max-height:180px;overflow-y:auto;
+  }
+  .ac-dropdown.open{display:block}
+  .ac-item{
+    padding:11px 13px;font-size:14px;color:var(--text);
+    cursor:pointer;border-bottom:0.5px solid var(--border);
+    font-family:var(--font);
+  }
+  .ac-item:last-child{border-bottom:none}
+  .ac-item:active{background:var(--surface2)}
+
 </style>
 </head>
 <body>
@@ -261,7 +280,10 @@
 
     <div class="form-row">
       <div class="form-label">아티스트</div>
-      <input class="form-input" id="fArtist" placeholder="아티스트 이름"/>
+      <div class="ac-wrap">
+        <input class="form-input" id="fArtist" placeholder="아티스트 이름" oninput="showAc('fArtist','fArtistDrop','artist')" onfocus="showAc('fArtist','fArtistDrop','artist')" onblur="hideAc('fArtistDrop')" autocomplete="off"/>
+        <div class="ac-dropdown" id="fArtistDrop"></div>
+      </div>
     </div>
     <div class="form-row">
       <div class="form-label">공연명</div>
@@ -279,7 +301,10 @@
     </div>
     <div class="form-row">
       <div class="form-label">장소 (선택)</div>
-      <input class="form-input" id="fVenue" placeholder="공연장 이름"/>
+      <div class="ac-wrap">
+        <input class="form-input" id="fVenue" placeholder="공연장 이름" oninput="showAc('fVenue','fVenueDrop','venue')" onfocus="showAc('fVenue','fVenueDrop','venue')" onblur="hideAc('fVenueDrop')" autocomplete="off"/>
+        <div class="ac-dropdown" id="fVenueDrop"></div>
+      </div>
     </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
@@ -292,7 +317,10 @@
     <input type="hidden" id="eId"/>
     <div class="form-row">
       <div class="form-label">아티스트</div>
-      <input class="form-input" id="eArtist" placeholder="아티스트 이름"/>
+      <div class="ac-wrap">
+        <input class="form-input" id="eArtist" placeholder="아티스트 이름" oninput="showAc('eArtist','eArtistDrop','artist')" onfocus="showAc('eArtist','eArtistDrop','artist')" onblur="hideAc('eArtistDrop')" autocomplete="off"/>
+        <div class="ac-dropdown" id="eArtistDrop"></div>
+      </div>
     </div>
     <div class="form-row">
       <div class="form-label">공연명</div>
@@ -310,7 +338,10 @@
     </div>
     <div class="form-row">
       <div class="form-label">장소 (선택)</div>
-      <input class="form-input" id="eVenue" placeholder="공연장 이름"/>
+      <div class="ac-wrap">
+        <input class="form-input" id="eVenue" placeholder="공연장 이름" oninput="showAc('eVenue','eVenueDrop','venue')" onfocus="showAc('eVenue','eVenueDrop','venue')" onblur="hideAc('eVenueDrop')" autocomplete="off"/>
+        <div class="ac-dropdown" id="eVenueDrop"></div>
+      </div>
     </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
   </div>
@@ -706,6 +737,47 @@ function deleteEvent(ev,id){
     fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({action:'delete',event_id:id})});
   }catch(e){}
+}
+
+/* ── autocomplete ── */
+function getAcList(type){
+  if(type==='artist'){
+    const set=new Set();
+    allEvents.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>set.add(a)));
+    return [...set].sort();
+  } else {
+    const set=new Set();
+    allEvents.forEach(e=>{ if(e.venue) set.add(e.venue); });
+    return [...set].sort();
+  }
+}
+
+function showAc(inputId, dropId, type){
+  const input=document.getElementById(inputId);
+  const drop=document.getElementById(dropId);
+  if(!input||!drop) return;
+  const q=input.value.trim().toLowerCase();
+  const list=getAcList(type).filter(v=>!q||v.toLowerCase().includes(q));
+  if(!list.length){ drop.classList.remove('open'); return; }
+  drop.innerHTML=list.map(v=>
+    `<div class="ac-item" onmousedown="pickAc('${inputId}','${dropId}',event)">${v}</div>`
+  ).join('');
+  drop.classList.add('open');
+}
+
+function pickAc(inputId, dropId, ev){
+  ev.preventDefault();
+  const input=document.getElementById(inputId);
+  const drop=document.getElementById(dropId);
+  if(input) input.value=ev.currentTarget.textContent;
+  if(drop) drop.classList.remove('open');
+}
+
+function hideAc(dropId){
+  setTimeout(()=>{
+    const drop=document.getElementById(dropId);
+    if(drop) drop.classList.remove('open');
+  },150);
 }
 
 /* ── auto time format ── */
