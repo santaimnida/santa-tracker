@@ -419,7 +419,12 @@ function renderCard(e){
     </svg>${e.venue}</span>`:'';
 
   const year = new Date(e.date).getFullYear();
-  const barColor = year === 2025 ? 'var(--release)' : year === 2027 ? '#AD88F8' : 'var(--concert)';
+  const barColor = year === 2023 ? '#ffefa6'
+                 : year === 2024 ? '#F8D4FC'
+                 : year === 2025 ? '#d4e89a'
+                 : year === 2026 ? '#a8d1f0'
+                 : year === 2027 ? '#ffb9c6'
+                 : '#a48f7b';
 
   return `<div class="card-wrap" id="wrap_${e.id}">
     <div class="event-card" onclick="toggleCardActions('${e.id}')">
@@ -524,7 +529,12 @@ function renderStats(){
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
   const evs=byYear[activeYear]||[];
-  const barColor = activeYear == 2025 ? 'var(--release)' : activeYear == 2027 ? '#AD88F8' : 'var(--concert)';
+  const barColor = activeYear == 2023 ? '#ffefa6'
+                 : activeYear == 2024 ? '#F8D4FC'
+                 : activeYear == 2025 ? '#d4e89a'
+                 : activeYear == 2026 ? '#a8d1f0'
+                 : activeYear == 2027 ? '#ffb9c6'
+                 : '#a48f7b';
 
     const uniqueArtists = new Set();
     evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
