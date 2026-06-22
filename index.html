@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>공연을가자~ 그만가자</title>
+<title>영Rock없는삶</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
   :root {
@@ -173,11 +173,15 @@
   .form-input{
     width:100%;background:var(--surface2);border:0.5px solid var(--border-strong);
     border-radius:10px;padding:10px 13px;font-size:14px;font-family:var(--font);
-    color:var(--text);outline:none;
+    color:var(--text);outline:none;min-width:0;box-sizing:border-box;
+  }
+  input[type="date"].form-input{
+    -webkit-appearance:none;appearance:none;font-size:13px;padding:10px 8px;
   }
   .form-input:focus{border-color:rgba(0,0,0,0.3)}
   .form-row-half{display:flex;gap:10px;margin-bottom:12px}
-  .form-row-half .form-row{flex:1;margin-bottom:0}
+  .form-row-half .form-row{flex:1;margin-bottom:0;min-width:0}
+  .form-row-half .form-row:last-child{flex:0 0 90px}
 
   .btn-submit{
     width:100%;height:48px;background:var(--text);color:var(--bg);
@@ -225,7 +229,7 @@
 
 <header class="header">
   <div class="header-row">
-    <span class="header-title" onclick="location.reload()">공연을가자~ 그만가자</span>
+    <span class="header-title" onclick="location.reload()">영Rock없는삶</span>
     <button class="add-btn" onclick="openAdd()" aria-label="일정 추가">+</button>
   </div>
   <div class="filter-row">
@@ -270,7 +274,7 @@
       </div>
       <div class="form-row">
         <div class="form-label">시간 (선택)</div>
-        <input class="form-input" id="fTime" type="text" placeholder="18:00" maxlength="5" inputmode="numeric"/>
+        <input class="form-input" id="fTime" type="text" placeholder="18:00" maxlength="5" inputmode="numeric" oninput="autoTime(this)"/>
       </div>
     </div>
     <div class="form-row">
@@ -301,7 +305,7 @@
       </div>
       <div class="form-row">
         <div class="form-label">시간 (선택)</div>
-        <input class="form-input" id="eTime" type="text" placeholder="18:00" maxlength="5" inputmode="numeric"/>
+        <input class="form-input" id="eTime" type="text" placeholder="18:00" maxlength="5" inputmode="numeric" oninput="autoTime(this)"/>
       </div>
     </div>
     <div class="form-row">
@@ -415,11 +419,7 @@ function renderCard(e){
     </svg>${e.venue}</span>`:'';
 
   const year = new Date(e.date).getFullYear();
-  const barColor = year === 2025 ? 'var(--release)'
-                 : year === 2027 ? '#AD88F8'
-                 : year === 2024 ? '#FFAFA2'
-                 : year === 2023 ? '#FFFB8F'
-                 : 'var(--concert)';
+  const barColor = year === 2025 ? 'var(--release)' : year === 2027 ? '#AD88F8' : 'var(--concert)';
 
   return `<div class="card-wrap" id="wrap_${e.id}">
     <div class="event-card" onclick="toggleCardActions('${e.id}')">
@@ -524,11 +524,7 @@ function renderStats(){
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
   const evs=byYear[activeYear]||[];
-  const barColor = activeYear == 2025 ? 'var(--release)'
-                 : activeYear == 2027 ? '#AD88F8'
-                 : activeYear == 2024 ? '#FFAFA2'
-                 : activeYear == 2023 ? '#FFFB8F'
-                 : 'var(--concert)';
+  const barColor = activeYear == 2025 ? 'var(--release)' : activeYear == 2027 ? '#AD88F8' : 'var(--concert)';
 
     const uniqueArtists = new Set();
     evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
@@ -700,6 +696,13 @@ function deleteEvent(ev,id){
     fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({action:'delete',event_id:id})});
   }catch(e){}
+}
+
+/* ── auto time format ── */
+function autoTime(input){
+  let v = input.value.replace(/[^0-9]/g,'');
+  if(v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2,4);
+  input.value = v;
 }
 
 /* ── load ── */
