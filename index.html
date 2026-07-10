@@ -146,7 +146,7 @@
   .stats-row{display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);gap:10px;min-height:40px}
   .stats-row:last-child{border-bottom:none}
   .stats-name{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;font-family:var(--font)}
-  .stats-count{font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;min-width:24px;text-align:right;line-height:1}
+  .stats-count{font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;min-width:24px;text-align:right;line-height:1;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
   .stats-bar-wrap{width:80px;height:4px;background:var(--surface2);border-radius:2px;flex-shrink:0;overflow:hidden}
   .stats-bar{height:100%;border-radius:2px;transition:width 0.3s ease}
 
@@ -697,7 +697,7 @@ function renderStats(){
           html+=`<div class="stats-row">
             <div class="stats-name">${name}</div>
             <div class="stats-bar-wrap" style="flex-shrink:0"><div class="stats-bar" style="width:${pct}%;background:${barColor}"></div></div>
-            <div class="stats-count" style="flex-shrink:0;min-width:90px;text-align:right;font-size:11px">${fmtKRW(spend)} <span style="color:var(--text3);font-weight:400">·${cnt}회</span></div>
+            <div class="stats-count" style="flex-shrink:0;min-width:90px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;font-feature-settings:'tnum'">${fmtKRW(spend)} <span style="color:var(--text3);font-weight:400">·${cnt}회</span></div>
           </div>`;
         });
         html+=`</div>`;
@@ -741,7 +741,7 @@ async function submitAdd(){
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
 
-  const newEvent={id:genId(),artist,title,date,time,venue,price:price?Number(price):null,ticket,type:'concert'};
+  const newEvent={id:genId(),artist,title,date,time,venue,price:price!==''?Number(price):null,ticket,type:'concert'};
   allEvents.push(newEvent);
   saveEvents();
   renderAll();
@@ -805,7 +805,7 @@ function submitEdit(){
   if(!date)  {toast('날짜를 선택해주세요');return;}
   const idx=allEvents.findIndex(e=>e.id===id);
   if(idx===-1) return;
-  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue,price:price?Number(price):null,ticket};
+  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue,price:price!==''?Number(price):null,ticket};
   saveEvents(); renderAll();
   document.getElementById('editOverlay').classList.remove('open');
   toast('수정됐어요!');
@@ -899,7 +899,7 @@ function loadData(){
         id: r.id||(r.artist+'|'+r.date+'|'+r.title),
         artist:r.artist, title:r.title, date:r.date,
         time:r.time||'', venue:r.venue||'',
-        price:r.price?Number(r.price):null, ticket:r.ticket||'',
+        price:r.price!=null&&r.price!==''?Number(r.price):null, ticket:r.ticket||'',
         type:'concert',
       }));
 
