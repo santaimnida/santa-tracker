@@ -306,6 +306,19 @@
         <div class="ac-dropdown" id="fVenueDrop"></div>
       </div>
     </div>
+    <div class="form-row-half">
+      <div class="form-row">
+        <div class="form-label">티켓값 (선택)</div>
+        <input class="form-input" id="fPrice" type="text" placeholder="55000" inputmode="numeric"/>
+      </div>
+      <div class="form-row">
+        <div class="form-label">티켓처 (선택)</div>
+        <div class="ac-wrap">
+          <input class="form-input" id="fTicket" placeholder="인터파크" oninput="showAc('fTicket','fTicketDrop','ticket')" onfocus="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
+          <div class="ac-dropdown" id="fTicketDrop"></div>
+        </div>
+      </div>
+    </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
 </div>
@@ -341,6 +354,19 @@
       <div class="ac-wrap">
         <input class="form-input" id="eVenue" placeholder="공연장 이름" oninput="showAc('eVenue','eVenueDrop','venue')" onfocus="showAc('eVenue','eVenueDrop','venue')" onblur="hideAc('eVenueDrop')" autocomplete="off"/>
         <div class="ac-dropdown" id="eVenueDrop"></div>
+      </div>
+    </div>
+    <div class="form-row-half">
+      <div class="form-row">
+        <div class="form-label">티켓값 (선택)</div>
+        <input class="form-input" id="ePrice" type="text" placeholder="55000" inputmode="numeric"/>
+      </div>
+      <div class="form-row">
+        <div class="form-label">티켓처 (선택)</div>
+        <div class="ac-wrap">
+          <input class="form-input" id="eTicket" placeholder="인터파크" oninput="showAc('eTicket','eTicketDrop','ticket')" onfocus="showAc('eTicket','eTicketDrop','ticket')" onblur="hideAc('eTicketDrop')" autocomplete="off"/>
+          <div class="ac-dropdown" id="eTicketDrop"></div>
+        </div>
       </div>
     </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
@@ -582,6 +608,7 @@ function renderStats(){
     <div class="stats-seg">
       <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
       <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
+      <button class="stats-seg-btn${activeSeg==='spend'?' active':''}" onclick="switchStatsSeg('spend')">지출</button>
     </div>
   </div>`;
 
@@ -603,7 +630,7 @@ function renderStats(){
       </div>`;
     });
     html+=`</div>`;
-  } else {
+  } else if(activeSeg==='venue'){
     const counts={};
     evs.forEach(e=>{ if(e.venue) counts[e.venue]=(counts[e.venue]||0)+1; });
     const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
@@ -621,6 +648,53 @@ function renderStats(){
       html+=`</div>`;
     } else {
       html+=`<div class="empty"><div class="empty-icon" style="font-size:24px">📍</div><div class="empty-t" style="font-size:13px">공연장 정보가 없어요</div></div>`;
+    }
+  } else {
+    // 지출 통계
+    const paid=evs.filter(e=>e.price!=null&&e.price>0);
+    const totalSpend=paid.reduce((s,e)=>s+(e.price||0),0);
+    const avgPrice=paid.length?Math.round(totalSpend/paid.length):0;
+    const fmtKRW=n=>n.toLocaleString('ko-KR')+'원';
+
+    if(!paid.length){
+      html+=`<div class="empty"><div class="empty-icon" style="font-size:24px">💰</div><div class="empty-t" style="font-size:13px">티켓 금액 정보가 없어요</div></div>`;
+    } else {
+      // 요약
+      html+=`<div class="stats-list">
+        <div class="stats-row">
+          <div class="stats-name">총 지출</div>
+          <div class="stats-count" style="font-size:14px">${fmtKRW(totalSpend)}</div>
+        </div>
+        <div class="stats-row">
+          <div class="stats-name">평균 티켓값</div>
+          <div class="stats-count">${fmtKRW(avgPrice)}</div>
+        </div>
+        <div class="stats-row">
+          <div class="stats-name">유료 공연 수</div>
+          <div class="stats-count">${paid.length}회</div>
+        </div>
+      </div>`;
+      // 티켓처별
+      const ticketCounts={};
+      const ticketSpend={};
+      paid.forEach(e=>{
+        const t=e.ticket||'기타';
+        ticketCounts[t]=(ticketCounts[t]||0)+1;
+        ticketSpend[t]=(ticketSpend[t]||0)+(e.price||0);
+      });
+      const ticketSorted=Object.entries(ticketSpend).sort((a,b)=>b[1]-a[1]);
+      const maxSpend=ticketSorted[0]?.[1]||1;
+      html+=`<div class="stats-list" style="margin-top:8px">`;
+      ticketSorted.forEach(([name,spend])=>{
+        const pct=Math.round((spend/maxSpend)*100);
+        const cnt=ticketCounts[name];
+        html+=`<div class="stats-row">
+          <div class="stats-name">${name}</div>
+          <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%;background:${barColor}"></div></div>
+          <div class="stats-count" style="min-width:70px;font-size:11px">${fmtKRW(spend)}<span style="color:var(--text3);font-weight:400"> ·${cnt}회</span></div>
+        </div>`;
+      });
+      html+=`</div>`;
     }
   }
 
@@ -641,6 +715,8 @@ function openAdd(){
   document.getElementById('fTitle').value='';
   document.getElementById('fTime').value='';
   document.getElementById('fVenue').value='';
+  document.getElementById('fPrice').value='';
+  document.getElementById('fTicket').value='';
   document.getElementById('overlay').classList.add('open');
   setTimeout(()=>document.getElementById('fArtist').focus(),300);
 }
@@ -652,11 +728,13 @@ async function submitAdd(){
   const date  =document.getElementById('fDate').value;
   const time  =document.getElementById('fTime').value;
   const venue =document.getElementById('fVenue').value.trim();
+  const price =document.getElementById('fPrice').value.replace(/[^0-9]/g,'');
+  const ticket=document.getElementById('fTicket').value.trim();
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fArtist').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
 
-  const newEvent={id:genId(),artist,title,date,time,venue,type:'concert'};
+  const newEvent={id:genId(),artist,title,date,time,venue,price:price?Number(price):null,ticket,type:'concert'};
   allEvents.push(newEvent);
   saveEvents();
   renderAll();
@@ -700,6 +778,8 @@ function openEdit(ev,id){
   document.getElementById('eDate').value  =e.date;
   document.getElementById('eTime').value  =e.time||'';
   document.getElementById('eVenue').value =e.venue||'';
+  document.getElementById('ePrice').value =e.price!=null?e.price:'';
+  document.getElementById('eTicket').value=e.ticket||'';
   document.getElementById('editOverlay').classList.add('open');
 }
 function closeEditIfOut(ev){ if(ev.target===document.getElementById('editOverlay')) document.getElementById('editOverlay').classList.remove('open'); }
@@ -711,12 +791,14 @@ function submitEdit(){
   const date  =document.getElementById('eDate').value;
   const time  =document.getElementById('eTime').value;
   const venue =document.getElementById('eVenue').value.trim();
+  const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
+  const ticket=document.getElementById('eTicket').value.trim();
   if(!artist){toast('아티스트를 입력해주세요');return;}
   if(!title) {toast('공연명을 입력해주세요');return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
   const idx=allEvents.findIndex(e=>e.id===id);
   if(idx===-1) return;
-  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue};
+  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue,price:price?Number(price):null,ticket};
   saveEvents(); renderAll();
   document.getElementById('editOverlay').classList.remove('open');
   toast('수정됐어요!');
@@ -744,6 +826,10 @@ function getAcList(type){
   if(type==='artist'){
     const set=new Set();
     allEvents.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>set.add(a)));
+    return [...set].sort();
+  } else if(type==='ticket'){
+    const set=new Set();
+    allEvents.forEach(e=>{ if(e.ticket) set.add(e.ticket); });
     return [...set].sort();
   } else {
     const set=new Set();
@@ -805,7 +891,9 @@ function loadData(){
       .map(r=>({
         id: r.id||(r.artist+'|'+r.date+'|'+r.title),
         artist:r.artist, title:r.title, date:r.date,
-        time:r.time||'', venue:r.venue||'', type:'concert',
+        time:r.time||'', venue:r.venue||'',
+        price:r.price?Number(r.price):null, ticket:r.ticket||'',
+        type:'concert',
       }));
 
     saveEvents();
