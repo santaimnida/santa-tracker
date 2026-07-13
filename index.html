@@ -156,15 +156,14 @@
   .empty-t{font-size:14px;font-weight:500;color:var(--text3)}
 
   /* ── bottom sheet ── */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;display:none;align-items:flex-end;justify-content:center}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;display:none;align-items:center;justify-content:center}
   .overlay.open{display:flex}
-  .bottom-panel{
-    background:var(--surface);border-radius:20px 20px 0 0;
-    padding:20px 20px calc(20px + var(--safe-bottom));
-    width:100%;max-width:430px;
-    animation:su .18s ease-out;
+  .bottom-panel,.center-panel{
+    background:var(--surface);border-radius:20px;
+    padding:24px 20px;
+    width:calc(100% - 40px);max-width:390px;
+    max-height:85vh;overflow-y:auto;
   }
-  @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .panel-handle{width:34px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 16px}
   .panel-title{font-size:16px;font-weight:600;margin-bottom:16px}
 
@@ -325,7 +324,6 @@
 <!-- ── Add sheet ── -->
 <div class="overlay" id="overlay" onclick="closeIfOut(event)">
   <div class="bottom-panel">
-    <div class="panel-handle"></div>
 
     <div class="form-row">
       <div class="form-label">아티스트</div>
@@ -375,7 +373,6 @@
 <!-- ── Edit sheet ── -->
 <div class="overlay" id="editOverlay" onclick="closeEditIfOut(event)">
   <div class="bottom-panel">
-    <div class="panel-handle"></div>
     <input type="hidden" id="eId"/>
     <div class="form-row">
       <div class="form-label">아티스트</div>
@@ -424,9 +421,8 @@
 
 
 <!-- ── Detail sheet ── -->
-<div class="overlay" id="detailOverlay" onclick="closeDetailIfOut(event)">
-  <div class="bottom-panel" style="max-height:85vh;overflow-y:auto">
-    <div class="panel-handle"></div>
+<div class="overlay center" id="detailOverlay" onclick="closeDetailIfOut(event)">
+  <div class="center-panel">
     <div class="detail-header">
       <div class="detail-artist" id="dArtist"></div>
       <div class="detail-title" id="dTitle"></div>
