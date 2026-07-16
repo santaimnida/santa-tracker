@@ -312,6 +312,66 @@
     font-size:9px;font-weight:600;padding:3px 5px;text-align:center;
   }
 
+
+  /* ── calendar view ── */
+  .cal-wrap{position:relative}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px}
+  .nav-label-btn{
+    display:flex;align-items:center;gap:4px;
+    background:var(--surface2);border:0.5px solid var(--border-strong);
+    border-radius:8px;cursor:pointer;height:28px;padding:0 10px;
+    font-family:var(--font);
+  }
+  .nav-label-text{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px}
+  .nav-chevron{font-size:11px;color:var(--text3);transition:transform .15s;display:inline-block}
+  .nav-chevron.open{transform:rotate(180deg)}
+  .nav-arrows{display:flex;gap:4px}
+  .nav-arr{
+    background:var(--surface2);border:0.5px solid var(--border-strong);
+    border-radius:8px;cursor:pointer;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text3);font-size:15px;font-family:var(--font);
+  }
+  .nav-arr:active{opacity:0.5}
+
+  .cal-dd{
+    position:absolute;top:52px;left:20px;right:20px;
+    background:var(--surface);border:0.5px solid var(--border-strong);
+    border-radius:14px;padding:14px;z-index:50;
+    box-shadow:0 4px 20px rgba(0,0,0,.1);display:none;
+  }
+  .cal-dd.open{display:block}
+  .dd-sec{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+  .dd-years{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .dd-months{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .dd-btn{
+    height:30px;border:0.5px solid var(--border-strong);border-radius:8px;
+    background:none;font-size:12px;font-weight:500;font-family:var(--font);
+    color:var(--text3);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0 10px;
+    transition:all .12s;
+  }
+  .dd-btn.year{min-width:52px}
+  .dd-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .dd-btn:active{opacity:0.6}
+
+  .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;margin-bottom:4px}
+  .cal-dow-cell{text-align:center;font-size:10px;font-weight:600;color:var(--text3);padding:4px 0}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 12px 16px}
+  .cal-cell{
+    aspect-ratio:1;border-radius:8px;overflow:hidden;
+    position:relative;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cal-cell img{
+    width:100%;height:100%;object-fit:cover;
+    object-position:center;display:block;
+  }
+  .cal-num{font-size:12px;font-weight:600}
+  .cal-num.has{color:var(--text)}
+  .cal-num.none{color:var(--text3);font-weight:400}
+  .cal-empty{aspect-ratio:1}
+
 </style>
 </head>
 <body>
@@ -607,88 +667,120 @@ function renderCard(e){
 }
 
 /* ── archive render: year → month grid → concert list ── */
-function renderArchive(){
-  const el=document.getElementById('mainContent');
-  const past=allEvents.filter(e=>daysUntil(e.date)<0);
-  if(!past.length){
-    el.innerHTML=`<div class="empty"><div class="empty-icon">🎤</div><div class="empty-t">지난 공연이 없어요</div></div>`;
-    return;
-  }
+/* ── calendar state ── */
+let _calYear=null, _calMonth=null;
 
-  // 연도별 그룹
-  const byYear={};
+function renderArchive(){
+  const past=allEvents.filter(e=>daysUntil(e.date)<0);
+  // default to most recent month with events
+  if(!_calYear || !_calMonth){
+    if(past.length){
+      const latest=past.reduce((a,b)=>new Date(a.date)>new Date(b.date)?a:b);
+      const d=new Date(latest.date);
+      _calYear=d.getFullYear(); _calMonth=d.getMonth()+1;
+    } else {
+      const now=new Date(); _calYear=now.getFullYear(); _calMonth=now.getMonth()+1;
+    }
+  }
+  renderCalendar(past);
+}
+
+function renderCalendar(past){
+  const el=document.getElementById('mainContent');
+  if(!past) past=allEvents.filter(e=>daysUntil(e.date)<0);
+
+  // build event map by date
+  const byDate={};
   past.forEach(e=>{
     const d=new Date(e.date);
-    const y=d.getFullYear();
-    const m=d.getMonth()+1;
-    if(!byYear[y]) byYear[y]={};
-    if(!byYear[y][m]) byYear[y][m]=[];
-    byYear[y][m].push(e);
+    const y=d.getFullYear(), m=d.getMonth()+1, day=d.getDate();
+    if(y===_calYear && m===_calMonth){
+      if(!byDate[day]) byDate[day]=[];
+      byDate[day].push(e);
+    }
   });
 
-  const years=Object.keys(byYear).sort((a,b)=>b-a);
-  const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  // available years from past events
+  const years=[...new Set(past.map(e=>new Date(e.date).getFullYear()))].sort((a,b)=>a-b);
+  if(!years.length) years.push(new Date().getFullYear());
 
-  let html='<div class="archive-wrap">';
-  years.forEach(year=>{
-    html+=`<div class="archive-year">
-      <div class="archive-year-label">${year}</div>
-      <div class="archive-month-grid">`;
-    for(let m=1;m<=12;m++){
-      const evs=byYear[year][m]||[];
-      const has=evs.length>0;
-      html+=`<button class="month-btn${has?' has':''}" onclick="toggleMonth(this,'${year}_${m}')" ${!has?'disabled':''}>
-        ${MONTHS[m-1]}${has?`<span class="month-count">${evs.length}</span>`:''}
-      </button>`;
-    }
-    html+=`</div>`; // month-grid
+  const firstDay=new Date(_calYear,_calMonth-1,1).getDay();
+  const daysInMonth=new Date(_calYear,_calMonth,0).getDate();
 
-    // 각 월별 포스터 그리드 (숨겨진 상태)
-    for(let m=1;m<=12;m++){
-      const evs=byYear[year][m]||[];
-      if(!evs.length) continue;
-      evs.sort((a,b)=>new Date(a.date)-new Date(b.date));
-      html+=`<div class="month-list" id="month_${year}_${m}" style="display:none">`;
-      // 포스터 있는 것 먼저, 없는 것 뒤
-      const hasPoster=evs.filter(e=>e.image);
-      const noPoster=evs.filter(e=>!e.image);
-      if(hasPoster.length || noPoster.length){
-        html+=`<div class="poster-grid">`;
-        [...hasPoster,...noPoster].forEach(e=>{
-          const d=new Date(e.date);
-          const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
-          if(e.image){
-            html+=`<div class="poster-cell" onclick="openDetail('${e.id}')">
-              <img src="${e.image}" alt="${e.title}" loading="lazy"/>
-              <div class="poster-cell-date">${dateStr} ${e.artist}</div>
-            </div>`;
-          } else {
-            html+=`<div class="poster-cell" onclick="openDetail('${e.id}')">
-              <div class="poster-cell-label">${dateStr}<br>${e.artist}<br><span style="font-weight:400;color:var(--text3)">${e.title.slice(0,20)}</span></div>
-            </div>`;
-          }
-        });
-        html+=`</div>`;
-      }
-      html+=`</div>`;
+  let html=`<div class="cal-wrap">
+    <div class="cal-nav">
+      <button class="nav-label-btn" onclick="toggleCalDd()">
+        <span class="nav-label-text" id="calLabel">${_calYear}년 ${_calMonth}월</span>
+        <span class="nav-chevron" id="calChevron">▾</span>
+      </button>
+      <div class="nav-arrows">
+        <button class="nav-arr" onclick="moveCalMonth(-1)">‹</button>
+        <button class="nav-arr" onclick="moveCalMonth(1)">›</button>
+      </div>
+    </div>
+
+    <div class="cal-dd" id="calDd">
+      <div class="dd-sec">년도</div>
+      <div class="dd-years">
+        ${years.map(y=>`<button class="dd-btn year${y===_calYear?' active':''}" onclick="selCalYear(${y})">${y}</button>`).join('')}
+      </div>
+      <div class="dd-sec">월</div>
+      <div class="dd-months">
+        ${Array.from({length:12},(_,i)=>`<button class="dd-btn${i+1===_calMonth?' active':''}" onclick="selCalMonth(${i+1})">${i+1}월</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="cal-dow">
+      <div class="cal-dow-cell">일</div><div class="cal-dow-cell">월</div><div class="cal-dow-cell">화</div>
+      <div class="cal-dow-cell">수</div><div class="cal-dow-cell">목</div><div class="cal-dow-cell">금</div>
+      <div class="cal-dow-cell">토</div>
+    </div>
+    <div class="cal-grid">`;
+
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-empty"></div>`;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const evs=byDate[d]||[];
+    const e=evs[0];
+    if(e&&e.image){
+      html+=`<div class="cal-cell" onclick="openDetail('${e.id}')">
+        <img src="${e.image}" alt="" loading="lazy"/>
+      </div>`;
+    } else if(e){
+      html+=`<div class="cal-cell" onclick="openDetail('${e.id}')">
+        <span class="cal-num has">${d}</span>
+      </div>`;
+    } else {
+      html+=`<div class="cal-cell" style="cursor:default">
+        <span class="cal-num none">${d}</span>
+      </div>`;
     }
-    html+=`</div>`; // year
-  });
-  html+=`</div>`;
+  }
+
+  html+=`</div></div>`;
   el.innerHTML=html;
 }
 
-function toggleMonth(btn, key){
-  const list=document.getElementById('month_'+key);
-  if(!list) return;
-  const isOpen=list.style.display!=='none';
-  const yearBlock=btn.closest('.archive-year');
-  yearBlock.querySelectorAll('.month-list').forEach(l=>{ l.style.display='none'; });
-  yearBlock.querySelectorAll('.month-btn').forEach(b=>b.classList.remove('active'));
-  if(!isOpen){
-    list.style.display='block';
-    btn.classList.add('active');
-  }
+function toggleCalDd(){
+  const dd=document.getElementById('calDd');
+  const ch=document.getElementById('calChevron');
+  if(!dd||!ch) return;
+  const open=dd.classList.toggle('open');
+  ch.style.transform=open?'rotate(180deg)':'';
+}
+function selCalYear(y){ _calYear=y; renderCalendar(); }
+function selCalMonth(m){
+  _calMonth=m;
+  document.getElementById('calDd')?.classList.remove('open');
+  const ch=document.getElementById('calChevron');
+  if(ch) ch.style.transform='';
+  renderCalendar();
+}
+function moveCalMonth(d){
+  _calMonth+=d;
+  if(_calMonth>12){_calMonth=1;_calYear++;}
+  if(_calMonth<1){_calMonth=12;_calYear--;}
+  renderCalendar();
 }
 function renderStats(){
   const el=document.getElementById('mainContent');
