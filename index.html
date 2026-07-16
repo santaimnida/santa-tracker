@@ -744,7 +744,7 @@ function renderCalendar(past){
     const e=evs[0];
     if(e&&e.image){
       html+=`<div class="cal-cell" onclick="openDetail('${e.id}')">
-        <img src="${e.image}" alt="" loading="lazy"/>
+        <img src="${toImgUrl(e.image)}" alt="" loading="lazy"/>
       </div>`;
     } else if(e){
       html+=`<div class="cal-cell" onclick="openDetail('${e.id}')">
@@ -1080,6 +1080,17 @@ function hideAc(dropId){
   },150);
 }
 
+function toImgUrl(url){
+  if(!url) return '';
+  // 구글 드라이브 링크 자동 변환
+  const m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if(m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+  // 구글 드라이브 open 링크
+  const m2 = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+  if(m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+  return url;
+}
+
 /* ── auto time format ── */
 function autoTime(input){
   let v = input.value.replace(/[^0-9]/g,'');
@@ -1110,7 +1121,7 @@ function openDetail(id){
 
   // poster image in detail
   const dImg = document.getElementById('dImg');
-  if(dImg){ if(e.image){ dImg.src=e.image; dImg.style.display='block'; } else { dImg.style.display='none'; } }
+  if(dImg){ if(e.image){ dImg.src=toImgUrl(e.image); dImg.style.display='block'; } else { dImg.style.display='none'; } }
 
   document.getElementById('dRows').innerHTML = rows.map(([label, val]) =>
     `<div class="detail-row">
