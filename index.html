@@ -289,6 +289,29 @@
   .detail-action-btn.delete{color:var(--red)}
   .detail-action-btn.edit{color:var(--text)}
 
+
+  /* ── poster grid ── */
+  .poster-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:6px;padding:10px 0 6px;
+  }
+  .poster-cell{
+    aspect-ratio:3/4;border-radius:8px;overflow:hidden;
+    background:var(--surface2);border:0.5px solid var(--border);
+    cursor:pointer;position:relative;
+  }
+  .poster-cell img{width:100%;height:100%;object-fit:cover;display:block}
+  .poster-cell-label{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:6px;text-align:center;
+    font-size:10px;font-weight:600;color:var(--text3);line-height:1.3;
+  }
+  .poster-cell-date{
+    position:absolute;bottom:0;left:0;right:0;
+    background:rgba(0,0,0,0.45);color:#fff;
+    font-size:9px;font-weight:600;padding:3px 5px;text-align:center;
+  }
+
 </style>
 </head>
 <body>
@@ -366,6 +389,10 @@
         </div>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-label">포스터 URL (선택)</div>
+      <input class="form-input" id="fImage" placeholder="https://..." autocomplete="off"/>
+    </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
 </div>
@@ -415,6 +442,10 @@
         </div>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-label">포스터 URL (선택)</div>
+      <input class="form-input" id="eImage" placeholder="https://..." autocomplete="off"/>
+    </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
   </div>
 </div>
@@ -423,9 +454,12 @@
 <!-- ── Detail sheet ── -->
 <div class="overlay center" id="detailOverlay" onclick="closeDetailIfOut(event)">
   <div class="center-panel">
-    <div class="detail-header">
-      <div class="detail-artist" id="dArtist"></div>
-      <div class="detail-title" id="dTitle"></div>
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
+      <img id="dImg" style="width:80px;aspect-ratio:3/4;object-fit:cover;border-radius:8px;display:none;flex-shrink:0" />
+      <div>
+        <div class="detail-artist" id="dArtist"></div>
+        <div class="detail-title" id="dTitle"></div>
+      </div>
     </div>
     <div class="detail-rows" id="dRows"></div>
     <div class="setlist-wrap">
@@ -609,13 +643,33 @@ function renderArchive(){
     }
     html+=`</div>`; // month-grid
 
-    // 각 월별 공연 리스트 (숨겨진 상태)
+    // 각 월별 포스터 그리드 (숨겨진 상태)
     for(let m=1;m<=12;m++){
       const evs=byYear[year][m]||[];
       if(!evs.length) continue;
       evs.sort((a,b)=>new Date(a.date)-new Date(b.date));
       html+=`<div class="month-list" id="month_${year}_${m}" style="display:none">`;
-      evs.forEach(e=>{html+=renderCard(e);});
+      // 포스터 있는 것 먼저, 없는 것 뒤
+      const hasPoster=evs.filter(e=>e.image);
+      const noPoster=evs.filter(e=>!e.image);
+      if(hasPoster.length || noPoster.length){
+        html+=`<div class="poster-grid">`;
+        [...hasPoster,...noPoster].forEach(e=>{
+          const d=new Date(e.date);
+          const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
+          if(e.image){
+            html+=`<div class="poster-cell" onclick="openDetail('${e.id}')">
+              <img src="${e.image}" alt="${e.title}" loading="lazy"/>
+              <div class="poster-cell-date">${dateStr} ${e.artist}</div>
+            </div>`;
+          } else {
+            html+=`<div class="poster-cell" onclick="openDetail('${e.id}')">
+              <div class="poster-cell-label">${dateStr}<br>${e.artist}<br><span style="font-weight:400;color:var(--text3)">${e.title.slice(0,20)}</span></div>
+            </div>`;
+          }
+        });
+        html+=`</div>`;
+      }
       html+=`</div>`;
     }
     html+=`</div>`; // year
@@ -628,12 +682,11 @@ function toggleMonth(btn, key){
   const list=document.getElementById('month_'+key);
   if(!list) return;
   const isOpen=list.style.display!=='none';
-  // 같은 연도 내 다른 월 닫기
   const yearBlock=btn.closest('.archive-year');
   yearBlock.querySelectorAll('.month-list').forEach(l=>{ l.style.display='none'; });
   yearBlock.querySelectorAll('.month-btn').forEach(b=>b.classList.remove('active'));
   if(!isOpen){
-    list.style.display='flex';
+    list.style.display='block';
     btn.classList.add('active');
   }
 }
@@ -794,6 +847,7 @@ function openAdd(){
   document.getElementById('fVenue').value='';
   document.getElementById('fPrice').value='';
   document.getElementById('fTicket').value='';
+  document.getElementById('fImage').value='';
   document.getElementById('overlay').classList.add('open');
   setTimeout(()=>document.getElementById('fArtist').focus(),300);
 }
@@ -807,11 +861,12 @@ async function submitAdd(){
   const venue =document.getElementById('fVenue').value.trim();
   const price =document.getElementById('fPrice').value.replace(/[^0-9]/g,'');
   const ticket=document.getElementById('fTicket').value.trim();
+  const image=document.getElementById('fImage').value.trim();
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fArtist').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
 
-  const newEvent={id:genId(),artist,title,date,time,venue,price:price!==''?Number(price):null,ticket,type:'concert'};
+  const newEvent={id:genId(),artist,title,date,time,venue,price:price!==''?Number(price):null,ticket,image,type:'concert'};
   allEvents.push(newEvent);
   saveEvents();
   renderAll();
@@ -845,6 +900,7 @@ function openEdit(ev,id){
   document.getElementById('eVenue').value =e.venue||'';
   document.getElementById('ePrice').value =e.price!=null?e.price:'';
   document.getElementById('eTicket').value=e.ticket||'';
+  document.getElementById('eImage').value=e.image||'';
   document.getElementById('editOverlay').classList.add('open');
 }
 function closeEditIfOut(ev){ if(ev.target===document.getElementById('editOverlay')) document.getElementById('editOverlay').classList.remove('open'); }
@@ -858,12 +914,13 @@ function submitEdit(){
   const venue =document.getElementById('eVenue').value.trim();
   const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
   const ticket=document.getElementById('eTicket').value.trim();
+  const image=document.getElementById('eImage').value.trim();
   if(!artist){toast('아티스트를 입력해주세요');return;}
   if(!title) {toast('공연명을 입력해주세요');return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
   const idx=allEvents.findIndex(e=>e.id===id);
   if(idx===-1) return;
-  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue,price:price!==''?Number(price):null,ticket};
+  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue,price:price!==''?Number(price):null,ticket,image};
   saveEvents(); renderAll();
   document.getElementById('editOverlay').classList.remove('open');
   toast('수정됐어요!');
@@ -959,6 +1016,10 @@ function openDetail(id){
     e.ticket ? ['티켓처', e.ticket] : null,
   ].filter(Boolean);
 
+  // poster image in detail
+  const dImg = document.getElementById('dImg');
+  if(dImg){ if(e.image){ dImg.src=e.image; dImg.style.display='block'; } else { dImg.style.display='none'; } }
+
   document.getElementById('dRows').innerHTML = rows.map(([label, val]) =>
     `<div class="detail-row">
       <div class="detail-label">${label}</div>
@@ -1025,7 +1086,7 @@ function loadData(){
         id: r.id||(r.artist+'|'+r.date+'|'+r.title),
         artist:r.artist, title:r.title, date:r.date,
         time:r.time||'', venue:r.venue||'',
-        price:r.price!=null&&r.price!==''?Number(r.price):null, ticket:r.ticket||'',
+        price:r.price!=null&&r.price!==''?Number(r.price):null, ticket:r.ticket||'', image:r.image||'',
         type:'concert',
       }));
 
