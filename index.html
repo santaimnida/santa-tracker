@@ -367,6 +367,23 @@
     width:100%;height:100%;object-fit:cover;
     object-position:center;display:block;
   }
+  .cal-stack{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  height:100%;
+}
+
+.cal-stack>div{
+  flex:1;
+  overflow:hidden;
+}
+
+.cal-stack img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
   .cal-num{font-size:12px;font-weight:600}
   .cal-num.has{color:var(--text)}
   .cal-num.none{color:var(--text3);font-weight:400}
@@ -740,21 +757,47 @@ function renderCalendar(past){
   for(let i=0;i<firstDay;i++) html+=`<div class="cal-empty"></div>`;
 
   for(let d=1;d<=daysInMonth;d++){
-    const evs=byDate[d]||[];
-    const e=evs[0];
-    if(e&&e.image){
-      html+=`<div class="cal-cell" onclick="openDetail('${e.id}')">
-        <img src="${toImgUrl(e.image)}" alt="" loading="lazy"/>
-      </div>`;
-    } else if(e){
-      html+=`<div class="cal-cell" onclick="openDetail('${e.id}')">
-        <span class="cal-num has">${d}</span>
-      </div>`;
-    } else {
-      html+=`<div class="cal-cell" style="cursor:default">
-        <span class="cal-num none">${d}</span>
-      </div>`;
-    }
+    const evs = (byDate[d] || []).sort((a,b)=>
+    (a.time || "99:99").localeCompare(b.time || "99:99")
+);
+
+if(evs.length >= 2 && evs[0].image && evs[1].image){
+
+  html += `
+  <div class="cal-cell">
+    <div class="cal-stack">
+      <div onclick="openDetail('${evs[0].id}')">
+        <img src="${toImgUrl(evs[0].image)}">
+      </div>
+      <div onclick="openDetail('${evs[1].id}')">
+        <img src="${toImgUrl(evs[1].image)}">
+      </div>
+    </div>
+  </div>`;
+
+}else if(evs.length){
+
+  const e = evs[0];
+
+  if(e.image){
+    html += `
+    <div class="cal-cell" onclick="openDetail('${e.id}')">
+      <img src="${toImgUrl(e.image)}">
+    </div>`;
+  }else{
+    html += `
+    <div class="cal-cell" onclick="openDetail('${e.id}')">
+      <span class="cal-num has">${d}</span>
+    </div>`;
+  }
+
+}else{
+
+  html += `
+  <div class="cal-cell" style="cursor:default">
+    <span class="cal-num none">${d}</span>
+  </div>`;
+}
   }
 
   html+=`</div></div>`;
