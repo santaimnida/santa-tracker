@@ -1082,12 +1082,18 @@ function hideAc(dropId){
 
 function toImgUrl(url){
   if(!url) return '';
-  // 구글 드라이브 링크 자동 변환
+  // 구글 드라이브 변환
   const m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
   if(m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
-  // 구글 드라이브 open 링크
   const m2 = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
   if(m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+  // imgur 페이지 링크 → 직접 이미지 링크
+  // https://imgur.com/XatFNXx → https://i.imgur.com/XatFNXx.jpg
+  const m3 = url.match(/^https?:\/\/(?:www\.)?imgur\.com\/(?!a\/)([a-zA-Z0-9]+)(?:\.\w+)?$/);
+  if(m3) return `https://i.imgur.com/${m3[1]}.jpg`;
+  // imgur 앨범 링크는 첫 이미지로
+  const m4 = url.match(/imgur\.com\/a\/([a-zA-Z0-9]+)/);
+  if(m4) return `https://i.imgur.com/${m4[1]}.jpg`;
   return url;
 }
 
