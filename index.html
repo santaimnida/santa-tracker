@@ -671,13 +671,13 @@ function renderCard(e){
 let _calYear=null, _calMonth=null;
 
 function renderArchive(){
-  const past=allEvents.filter(e=>daysUntil(e.date)<0);
+  const past=allEvents;
   // default to most recent month with events
   if(!_calYear || !_calMonth){
     if(past.length){
-      const latest=past.reduce((a,b)=>new Date(a.date)>new Date(b.date)?a:b);
-      const d=new Date(latest.date);
-      _calYear=d.getFullYear(); _calMonth=d.getMonth()+1;
+      const now = new Date();
+_calYear = now.getFullYear();
+_calMonth = now.getMonth() + 1;
     } else {
       const now=new Date(); _calYear=now.getFullYear(); _calMonth=now.getMonth()+1;
     }
@@ -687,7 +687,7 @@ function renderArchive(){
 
 function renderCalendar(past){
   const el=document.getElementById('mainContent');
-  if(!past) past=allEvents.filter(e=>daysUntil(e.date)<0);
+  if(!past) past = allEvents;
 
   // build event map by date
   const byDate={};
