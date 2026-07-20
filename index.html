@@ -835,7 +835,9 @@ function loadData(){
       .map(r=>({
         id: r.id||(r.artist+'|'+r.date+'|'+r.title),
         artist:r.artist, title:r.title, date:r.date,
-        time:r.time||'', venue:r.venue||'', type:'concert',
+        time:r.time||'', venue:r.venue||'',
+        price:r.price!=null&&r.price!==''?Number(r.price):null,
+        ticket:r.ticket||'', image:r.image||'', type:'concert',
       }));
 
     saveEvents();
