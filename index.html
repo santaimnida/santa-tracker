@@ -318,8 +318,8 @@
   .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px}
   .nav-label-btn{
     display:flex;align-items:center;justify-content:center;gap:4px;
-    background:var(--surface2);border:0.5px solid var(--border-strong);
-    border-radius:8px;cursor:pointer;height:28px;width:120px;flex-shrink:0;
+    background:var(--surface2);border:none;
+    border-radius:8px;cursor:pointer;height:28px;width:88px;flex-shrink:0;
     font-family:var(--font);
   }
   .nav-label-text{font-size:12px;font-weight:600;color:var(--text);letter-spacing:-.2px;white-space:nowrap}
@@ -327,15 +327,16 @@
   .nav-chevron.open{display:none}
   .nav-arrows{display:flex;gap:4px}
   .nav-arr{
-    background:var(--surface2);border:0.5px solid var(--border-strong);
-    border-radius:8px;cursor:pointer;width:28px;height:28px;
+    background:var(--surface2);border:none;
+    border-radius:50%;cursor:pointer;width:28px;height:28px;
     display:flex;align-items:center;justify-content:center;
     color:var(--text3);font-size:15px;font-family:var(--font);
   }
   .nav-arr:active{opacity:0.5}
 
   .cal-dd{
-    position:absolute;top:52px;left:20px;right:20px;
+    position:absolute;top:52px;left:50%;transform:translateX(-50%);
+    width:240px;
     background:var(--surface);border:0.5px solid var(--border-strong);
     border-radius:14px;padding:14px;z-index:50;
     box-shadow:0 4px 20px rgba(0,0,0,.1);display:none;
@@ -343,7 +344,7 @@
   .cal-dd.open{display:block}
   .dd-sec{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
   .dd-years{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-  .dd-months{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .dd-months{display:grid;grid-template-columns:repeat(6,30px);gap:6px;justify-content:center}
   .dd-btn{
     height:30px;border:0.5px solid var(--border-strong);border-radius:8px;
     background:none;font-size:12px;font-weight:500;font-family:var(--font);
@@ -352,6 +353,11 @@
     transition:all .12s;
   }
   .dd-btn.year{min-width:52px}
+  .dd-btn.month{
+    width:30px;height:30px;border-radius:50%;padding:0;
+    font-size:11px;border:0.5px solid var(--border-strong);
+    justify-self:center;
+  }
   .dd-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
   .dd-btn:active{opacity:0.6}
 
@@ -388,6 +394,43 @@
   .cal-num.has{color:var(--text)}
   .cal-num.none{color:var(--text3);font-weight:400}
   .cal-empty{aspect-ratio:1}
+
+
+  /* ── artist tag input ── */
+  .tag-input-wrap{
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+    background:var(--surface2);border:0.5px solid var(--border-strong);
+    border-radius:10px;padding:7px 10px;min-height:44px;cursor:text;
+    position:relative;
+  }
+  .tag-input-wrap:focus-within{border-color:rgba(0,0,0,0.3)}
+  .tag-item{
+    display:flex;align-items:center;gap:4px;
+    background:var(--surface);border:0.5px solid var(--border-strong);
+    border-radius:20px;padding:3px 10px 3px 10px;
+    font-size:12px;font-weight:500;color:var(--text);
+    white-space:nowrap;
+  }
+  .tag-remove{
+    background:none;border:none;cursor:pointer;
+    color:var(--text3);font-size:14px;line-height:1;
+    padding:0;display:flex;align-items:center;margin-left:2px;
+  }
+  .tag-remove:active{opacity:0.5}
+  .tag-text-input{
+    border:none;background:none;outline:none;
+    font-size:14px;font-family:var(--font);color:var(--text);
+    min-width:80px;flex:1;padding:2px 0;
+  }
+  .tag-text-input::placeholder{color:var(--text3)}
+  .tag-ac-dropdown{
+    position:absolute;top:calc(100% + 4px);left:0;right:0;
+    background:var(--surface);border:0.5px solid var(--border-strong);
+    border-radius:10px;z-index:500;
+    box-shadow:0 4px 16px rgba(0,0,0,0.10);
+    display:none;max-height:160px;overflow-y:auto;
+  }
+  .tag-ac-dropdown.open{display:block}
 
 </style>
 </head>
@@ -427,9 +470,14 @@
 
     <div class="form-row">
       <div class="form-label">아티스트</div>
-      <div class="ac-wrap">
-        <input class="form-input" id="fArtist" placeholder="아티스트 이름" oninput="showAc('fArtist','fArtistDrop','artist')" onfocus="showAc('fArtist','fArtistDrop','artist')" onblur="hideAc('fArtistDrop')" autocomplete="off"/>
-        <div class="ac-dropdown" id="fArtistDrop"></div>
+      <div class="tag-input-wrap" id="fArtistWrap" onclick="document.getElementById('fArtistText').focus()">
+        <div id="fArtistTags"></div>
+        <input class="tag-text-input" id="fArtistText" placeholder="이름 입력 후 엔터"
+          oninput="tagAc('fArtistText','fArtistTagDrop','f')"
+          onkeydown="tagKeydown(event,'f')"
+          onblur="tagBlur('fArtistTagDrop')"
+          autocomplete="off"/>
+        <div class="tag-ac-dropdown" id="fArtistTagDrop"></div>
       </div>
     </div>
     <div class="form-row">
@@ -480,9 +528,14 @@
     <input type="hidden" id="eId"/>
     <div class="form-row">
       <div class="form-label">아티스트</div>
-      <div class="ac-wrap">
-        <input class="form-input" id="eArtist" placeholder="아티스트 이름" oninput="showAc('eArtist','eArtistDrop','artist')" onfocus="showAc('eArtist','eArtistDrop','artist')" onblur="hideAc('eArtistDrop')" autocomplete="off"/>
-        <div class="ac-dropdown" id="eArtistDrop"></div>
+      <div class="tag-input-wrap" id="eArtistWrap" onclick="document.getElementById('eArtistText').focus()">
+        <div id="eArtistTags"></div>
+        <input class="tag-text-input" id="eArtistText" placeholder="이름 입력 후 엔터"
+          oninput="tagAc('eArtistText','eArtistTagDrop','e')"
+          onkeydown="tagKeydown(event,'e')"
+          onblur="tagBlur('eArtistTagDrop')"
+          autocomplete="off"/>
+        <div class="tag-ac-dropdown" id="eArtistTagDrop"></div>
       </div>
     </div>
     <div class="form-row">
@@ -743,7 +796,7 @@ function renderCalendar(past){
       </div>
       <div class="dd-sec">월</div>
       <div class="dd-months">
-        ${Array.from({length:12},(_,i)=>`<button class="dd-btn${i+1===_calMonth?' active':''}" onclick="selCalMonth(${i+1})">${i+1}월</button>`).join('')}
+        ${Array.from({length:12},(_,i)=>`<button class="dd-btn month${i+1===_calMonth?' active':''}" onclick="selCalMonth(${i+1})">${i+1}</button>`).join('')}
       </div>
     </div>
 
@@ -976,7 +1029,7 @@ function openAdd(){
   const mm=String(today.getMonth()+1).padStart(2,'0');
   const dd=String(today.getDate()).padStart(2,'0');
   document.getElementById('fDate').value=`${yyyy}-${mm}-${dd}`;
-  document.getElementById('fArtist').value='';
+  resetTags('f');
   document.getElementById('fTitle').value='';
   document.getElementById('fTime').value='';
   document.getElementById('fVenue').value='';
@@ -989,7 +1042,7 @@ function openAdd(){
 function closeIfOut(e){ if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); }
 
 async function submitAdd(){
-  const artist=document.getElementById('fArtist').value.trim();
+  const artist=getTagValue('f');
   const title =document.getElementById('fTitle').value.trim();
   const date  =document.getElementById('fDate').value;
   const time  =document.getElementById('fTime').value;
@@ -997,7 +1050,7 @@ async function submitAdd(){
   const price =document.getElementById('fPrice').value.replace(/[^0-9]/g,'');
   const ticket=document.getElementById('fTicket').value.trim();
   const image=document.getElementById('fImage').value.trim();
-  if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fArtist').focus();return;}
+  if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fArtistText').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
 
@@ -1028,7 +1081,7 @@ function openEdit(ev,id){
   const e=allEvents.find(ev=>ev.id===id);
   if(!e) return;
   document.getElementById('eId').value    =e.id;
-  document.getElementById('eArtist').value=e.artist;
+  setTags('e', e.artist);
   document.getElementById('eTitle').value =e.title;
   document.getElementById('eDate').value  =e.date;
   document.getElementById('eTime').value  =e.time||'';
@@ -1042,7 +1095,7 @@ function closeEditIfOut(ev){ if(ev.target===document.getElementById('editOverlay
 
 function submitEdit(){
   const id    =document.getElementById('eId').value;
-  const artist=document.getElementById('eArtist').value.trim();
+  const artist=getTagValue('e');
   const title =document.getElementById('eTitle').value.trim();
   const date  =document.getElementById('eDate').value;
   const time  =document.getElementById('eTime').value;
@@ -1050,7 +1103,7 @@ function submitEdit(){
   const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
   const ticket=document.getElementById('eTicket').value.trim();
   const image=document.getElementById('eImage').value.trim();
-  if(!artist){toast('아티스트를 입력해주세요');return;}
+  if(!artist){toast('아티스트를 입력해주세요');document.getElementById('eArtistText').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
   const idx=allEvents.findIndex(e=>e.id===id);
@@ -1138,6 +1191,91 @@ function toImgUrl(url){
   const m4 = url.match(/imgur\.com\/a\/([a-zA-Z0-9]+)/);
   if(m4) return `https://i.imgur.com/${m4[1]}.jpg`;
   return url;
+}
+
+/* ── artist tag input ── */
+const _tags = { f: [], e: [] };
+
+function renderTags(prefix) {
+  const wrap = document.getElementById(prefix + 'ArtistTags');
+  if (!wrap) return;
+  wrap.innerHTML = _tags[prefix].map((t, i) =>
+    `<span class="tag-item">${t}<button class="tag-remove" onmousedown="removeTag(event,'${prefix}',${i})">×</button></span>`
+  ).join('');
+}
+
+function addTag(prefix, val) {
+  const v = val.trim().replace(/,+$/, '').trim();
+  if (!v) return;
+  // 쉼표로 구분된 여러 아티스트 한번에 추가
+  v.split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
+    if (!_tags[prefix].includes(s)) _tags[prefix].push(s);
+  });
+  renderTags(prefix);
+  document.getElementById(prefix + 'ArtistText').value = '';
+}
+
+function removeTag(ev, prefix, idx) {
+  ev.preventDefault();
+  _tags[prefix].splice(idx, 1);
+  renderTags(prefix);
+}
+
+function getTagValue(prefix) {
+  // 입력 중인 텍스트도 포함
+  const textVal = document.getElementById(prefix + 'ArtistText').value.trim();
+  if (textVal) addTag(prefix, textVal);
+  return _tags[prefix].join(', ');
+}
+
+function setTags(prefix, val) {
+  _tags[prefix] = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+  renderTags(prefix);
+  document.getElementById(prefix + 'ArtistText').value = '';
+}
+
+function resetTags(prefix) {
+  _tags[prefix] = [];
+  renderTags(prefix);
+  document.getElementById(prefix + 'ArtistText').value = '';
+}
+
+function tagKeydown(ev, prefix) {
+  const input = ev.target;
+  if (ev.key === 'Enter' || ev.key === ',') {
+    ev.preventDefault();
+    const v = input.value.trim().replace(/,$/, '').trim();
+    if (v) { addTag(prefix, v); tagBlur(prefix + 'ArtistTagDrop'); }
+  } else if (ev.key === 'Backspace' && !input.value && _tags[prefix].length) {
+    _tags[prefix].pop();
+    renderTags(prefix);
+  }
+}
+
+function tagAc(inputId, dropId, prefix) {
+  const input = document.getElementById(inputId);
+  const drop  = document.getElementById(dropId);
+  if (!input || !drop) return;
+  const q = input.value.trim().toLowerCase();
+  const list = getAcList('artist').filter(v => !q || v.toLowerCase().includes(q));
+  if (!list.length) { drop.classList.remove('open'); return; }
+  drop.innerHTML = list.map(v =>
+    `<div class="ac-item" onmousedown="tagPickAc(event,'${prefix}','${v.replace(/'/g,"\'")}','${inputId}','${dropId}')">${v}</div>`
+  ).join('');
+  drop.classList.add('open');
+}
+
+function tagPickAc(ev, prefix, val, inputId, dropId) {
+  ev.preventDefault();
+  addTag(prefix, val);
+  document.getElementById(dropId).classList.remove('open');
+}
+
+function tagBlur(dropId) {
+  setTimeout(() => {
+    const drop = document.getElementById(dropId);
+    if (drop) drop.classList.remove('open');
+  }, 150);
 }
 
 /* ── auto time format ── */
