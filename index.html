@@ -398,16 +398,18 @@
 
   /* ── artist tag input ── */
   .tag-input-wrap{
-    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+    display:flex;flex-direction:column;gap:6px;
     background:var(--surface2);border:0.5px solid var(--border-strong);
-    border-radius:10px;padding:7px 10px;min-height:44px;cursor:text;
+    border-radius:10px;padding:8px 10px;cursor:text;
     position:relative;
   }
   .tag-input-wrap:focus-within{border-color:rgba(0,0,0,0.3)}
+  .tag-tags-row{display:flex;flex-wrap:wrap;gap:6px;min-height:0}
+  .tag-tags-row:empty{display:none}
   .tag-item{
-    display:flex;align-items:center;gap:4px;
+    display:inline-flex;align-items:center;gap:4px;
     background:var(--surface);border:0.5px solid var(--border-strong);
-    border-radius:20px;padding:3px 10px 3px 10px;
+    border-radius:20px;padding:3px 10px;
     font-size:12px;font-weight:500;color:var(--text);
     white-space:nowrap;
   }
@@ -420,7 +422,7 @@
   .tag-text-input{
     border:none;background:none;outline:none;
     font-size:14px;font-family:var(--font);color:var(--text);
-    min-width:80px;flex:1;padding:2px 0;
+    width:auto;min-width:80px;padding:2px 0;
   }
   .tag-text-input::placeholder{color:var(--text3)}
   .tag-ac-dropdown{
@@ -471,7 +473,7 @@
     <div class="form-row">
       <div class="form-label">아티스트</div>
       <div class="tag-input-wrap" id="fArtistWrap" onclick="document.getElementById('fArtistText').focus()">
-        <div id="fArtistTags"></div>
+        <div class="tag-tags-row" id="fArtistTags"></div>
         <input class="tag-text-input" id="fArtistText" placeholder="이름 입력 후 엔터"
           oninput="tagAc('fArtistText','fArtistTagDrop','f')"
           onkeydown="tagKeydown(event,'f')"
@@ -529,7 +531,7 @@
     <div class="form-row">
       <div class="form-label">아티스트</div>
       <div class="tag-input-wrap" id="eArtistWrap" onclick="document.getElementById('eArtistText').focus()">
-        <div id="eArtistTags"></div>
+        <div class="tag-tags-row" id="eArtistTags"></div>
         <input class="tag-text-input" id="eArtistText" placeholder="이름 입력 후 엔터"
           oninput="tagAc('eArtistText','eArtistTagDrop','e')"
           onkeydown="tagKeydown(event,'e')"
@@ -1203,7 +1205,6 @@ function renderTags(prefix) {
     `<span class="tag-item">${t}<button class="tag-remove" onmousedown="removeTag(event,'${prefix}',${i})">×</button></span>`
   ).join('');
 }
-
 function addTag(prefix, val) {
   const v = val.trim().replace(/,+$/, '').trim();
   if (!v) return;
@@ -1241,6 +1242,7 @@ function resetTags(prefix) {
 }
 
 function tagKeydown(ev, prefix) {
+  if (ev.isComposing || ev.keyCode === 229) return; // 한글 조합 중 무시
   const input = ev.target;
   if (ev.key === 'Enter' || ev.key === ',') {
     ev.preventDefault();
