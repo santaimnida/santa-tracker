@@ -927,11 +927,17 @@ function renderStats(){
 
   if(activeSeg==='artist'){
     const counts={};
+    const latest={};
     evs.forEach(e=>{
       e.artist.split(',').map(a=>a.trim()).filter(Boolean)
-        .forEach(a=>{ counts[a]=(counts[a]||0)+1; });
+        .forEach(a=>{
+          counts[a]=(counts[a]||0)+1;
+          if(!latest[a]||e.date>latest[a]) latest[a]=e.date;
+        });
     });
-    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const sorted=Object.entries(counts).sort((a,b)=>
+      b[1]!==a[1] ? b[1]-a[1] : (latest[b[0]]||'').localeCompare(latest[a[0]]||'')
+    );
     const maxVal=sorted[0]?.[1]||1;
     html+=`<div class="stats-list">`;
     sorted.forEach(([name,count])=>{
@@ -945,8 +951,16 @@ function renderStats(){
     html+=`</div>`;
   } else if(activeSeg==='venue'){
     const counts={};
-    evs.forEach(e=>{ if(e.venue) counts[e.venue]=(counts[e.venue]||0)+1; });
-    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const latest={};
+    evs.forEach(e=>{
+      if(e.venue){
+        counts[e.venue]=(counts[e.venue]||0)+1;
+        if(!latest[e.venue]||e.date>latest[e.venue]) latest[e.venue]=e.date;
+      }
+    });
+    const sorted=Object.entries(counts).sort((a,b)=>
+      b[1]!==a[1] ? b[1]-a[1] : (latest[b[0]]||'').localeCompare(latest[a[0]]||'')
+    );
     const maxVal=sorted[0]?.[1]||1;
     if(sorted.length){
       html+=`<div class="stats-list">`;
