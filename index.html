@@ -511,14 +511,14 @@
       <div class="form-row">
         <div class="form-label">티켓처 (선택)</div>
         <div class="ac-wrap">
-          <input class="form-input" id="fTicket" placeholder="인터파크" oninput="showAc('fTicket','fTicketDrop','ticket')" onfocus="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
+          <input class="form-input" id="fTicket" name="nofill_ticket" placeholder="인터파크" oninput="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="new-password"/>
           <div class="ac-dropdown" id="fTicketDrop"></div>
         </div>
       </div>
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL (선택)</div>
-      <input class="form-input" id="fImage" placeholder="https://..." autocomplete="off"/>
+      <input class="form-input" id="fImage" name="nofill_image" placeholder="https://..." autocomplete="new-password"/>
     </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
@@ -569,14 +569,14 @@
       <div class="form-row">
         <div class="form-label">티켓처 (선택)</div>
         <div class="ac-wrap">
-          <input class="form-input" id="eTicket" placeholder="인터파크" oninput="showAc('eTicket','eTicketDrop','ticket')" onfocus="showAc('eTicket','eTicketDrop','ticket')" onblur="hideAc('eTicketDrop')" autocomplete="off"/>
+          <input class="form-input" id="eTicket" name="nofill_eticket" placeholder="인터파크" oninput="showAc('eTicket','eTicketDrop','ticket')" onblur="hideAc('eTicketDrop')" autocomplete="new-password"/>
           <div class="ac-dropdown" id="eTicketDrop"></div>
         </div>
       </div>
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL (선택)</div>
-      <input class="form-input" id="eImage" placeholder="https://..." autocomplete="off"/>
+      <input class="form-input" id="eImage" name="nofill_eimage" placeholder="https://..." autocomplete="new-password"/>
     </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
   </div>
