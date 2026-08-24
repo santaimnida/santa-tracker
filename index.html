@@ -973,7 +973,7 @@ function renderStats(){
     if(!withAddr.length){
       html+=`<div class="empty"><div class="empty-icon">📍</div><div class="empty-t" style="font-size:13px">주소 정보가 없어요</div><div class="empty-s" style="font-size:11px;margin-top:4px">공연 수정에서 주소를 입력해주세요</div></div>`;
     } else {
-      html+=`<div style="padding:4px 0 0;font-size:12px;color:var(--text3)">${withAddr.length}개 공연장</div><div id="mapTabEl" style="margin:8px 0 0;height:420px;border-radius:14px;overflow:hidden;border:0.5px solid var(--border-strong)"></div>`;
+      html+=`<div id="mapTabEl" style="margin:12px 20px 20px;height:400px;border-radius:12px;overflow:hidden"></div>`;
     }
   } else if(activeSeg==='artist'){
     const counts={};
@@ -1100,10 +1100,15 @@ function renderStats(){
 
   el.innerHTML=html;
 
+  if(activeYear==='map'){
+    const withAddr=past.filter(e=>e.address);
+    if(withAddr.length) setTimeout(()=>initStatsMap(withAddr), 50);
+  } else if(window._statsLeaflet){
+    window._statsLeaflet.remove();
+    window._statsLeaflet=null;
+  }
+
 }
-
-
-/* ── map tab ── */
 function renderMapTab(){
   const el=document.getElementById('mainContent');
   const withAddr=allEvents.filter(e=>e.address);
