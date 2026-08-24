@@ -522,7 +522,7 @@
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL (선택)</div>
-      <input class="form-input" id="fImage" type="search" placeholder="https://..." autocomplete="off" spellcheck="false"/>
+      <input class="form-input" id="fImage" type="url" placeholder="https://i.imgur.com/..." autocomplete="off" spellcheck="false" onfocus="saveFormVals('f')" onblur="restoreFormVals('f')"/>
     </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
@@ -580,7 +580,7 @@
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL (선택)</div>
-      <input class="form-input" id="eImage" type="search" placeholder="https://..." autocomplete="off" spellcheck="false"/>
+      <input class="form-input" id="eImage" type="url" placeholder="https://i.imgur.com/..." autocomplete="off" spellcheck="false" onfocus="saveFormVals('e')" onblur="restoreFormVals('e')"/>
     </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
   </div>
@@ -1077,6 +1077,12 @@ function openAdd(){
   document.getElementById('fTicket').value='';
   document.getElementById('fImage').value='';
   document.getElementById('overlay').classList.add('open');
+  // 브라우저 자동완성이 열린 직후 적용되므로 딜레이 후 강제 초기화
+  setTimeout(()=>{
+    document.getElementById('fPrice').value='';
+    document.getElementById('fTicket').value='';
+    document.getElementById('fImage').value='';
+  }, 50);
   setTimeout(()=>document.getElementById('fArtist').focus(),300);
 }
 function closeIfOut(e){ if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); }
@@ -1102,6 +1108,14 @@ async function submitAdd(){
   saveEvents();
   renderAll();
   document.getElementById('overlay').classList.remove('open');
+  resetTags('f');
+  document.getElementById('fTitle').value='';
+  document.getElementById('fDate').value='';
+  document.getElementById('fTime').value='';
+  document.getElementById('fVenue').value='';
+  document.getElementById('fPrice').value='';
+  document.getElementById('fTicket').value='';
+  document.getElementById('fImage').value='';
   toast('공연이 추가됐어요!');
 
   try {
@@ -1320,6 +1334,21 @@ function tagBlur(dropId) {
     const drop = document.getElementById(dropId);
     if (drop) drop.classList.remove('open');
   }, 150);
+}
+
+/* ── protect form vals from browser autocomplete ── */
+const _savedVals = {};
+function saveFormVals(p){
+  _savedVals[p+'Price']  = document.getElementById(p+'Price').value;
+  _savedVals[p+'Ticket'] = document.getElementById(p+'Ticket').value;
+}
+function restoreFormVals(p){
+  setTimeout(()=>{
+    const price  = document.getElementById(p+'Price');
+    const ticket = document.getElementById(p+'Ticket');
+    if(price  && price.value  !== _savedVals[p+'Price'])  price.value  = _savedVals[p+'Price'];
+    if(ticket && ticket.value !== _savedVals[p+'Ticket']) ticket.value = _savedVals[p+'Ticket'];
+  }, 100);
 }
 
 /* ── auto time format ── */
