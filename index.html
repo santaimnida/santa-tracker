@@ -1264,7 +1264,7 @@ function openAdd(){
     document.getElementById('fTicket').value='';
     document.getElementById('fImage').value='';
   }, 50);
-  setTimeout(()=>document.getElementById('fArtist').focus(),300);
+  setTimeout(()=>document.getElementById('fArtistText').focus(),300);
 }
 function closeIfOut(e){ if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); }
 
@@ -1321,7 +1321,7 @@ function openEdit(ev,id){
   ev.stopPropagation();
   const actions=document.getElementById('actions_'+id);
   if(actions) actions.classList.remove('open');
-  openCardId=null;
+  window.openCardId=null;
   const e=allEvents.find(ev=>ev.id===id);
   if(!e) return;
   document.getElementById('eId').value    =e.id;
@@ -1348,6 +1348,8 @@ function submitEdit(){
   const time  =document.getElementById('eTime').value;
   const venue =document.getElementById('eVenue').value.trim();
   const address=document.getElementById('eAddress').value.trim();
+  const lat=parseFloat(document.getElementById('eLat').value)||null;
+  const lng=parseFloat(document.getElementById('eLng').value)||null;
   const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
   const rawETicket=document.getElementById('eTicket').value.trim();
   const ticket=rawETicket.startsWith('http')?'':rawETicket;
