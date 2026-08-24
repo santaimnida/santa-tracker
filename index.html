@@ -1133,8 +1133,8 @@ function initStatsMap(events){
   const ctx=canvas.getContext('2d');
   const W=308,H=420;
   const minLat=31,maxLat=46,minLng=124,maxLng=146;
-  const BASE_STEP=8,BASE_R=3.2;
-  let zoom=1,panX=0,panY=0,isPanning=false,lastX=0,lastY=0;
+  const DOT_R=2.8, STAR_R=3.5, GRID=7; // 고정 크기
+  let zoom=1, panX=0, panY=0;
 
   const KR_POLY=[[38.6,124.7],[38.9,125.0],[39.6,125.3],[40.2,124.4],[42.0,129.7],[42.4,130.6],[41.6,129.7],[40.4,129.3],[38.6,128.4],[38.2,128.6],[37.7,128.9],[37.2,129.4],[35.7,129.6],[35.0,129.0],[34.6,128.0],[34.3,126.9],[34.5,126.4],[35.1,126.2],[35.7,126.5],[36.5,126.5],[36.8,126.2],[37.8,124.6],[38.6,124.7]];
   const JEJU_POLY=[[33.2,126.1],[33.6,126.1],[33.6,126.9],[33.2,126.9],[33.2,126.1]];
@@ -1162,14 +1162,41 @@ function initStatsMap(events){
 
   const yc={2023:'#ffefa6',2024:'#F8D4FC',2025:'#d4e89a',2026:'#a8d1f0',2027:'#ffb9c6'};
 
-  function toXY(lat,lng){
-    const bx=(lng-minLng)/(maxLng-minLng)*(W-50)+25;
-    const by=(maxLat-lat)/(maxLat-minLat)*(H-50)+25;
-    return{x:bx*zoom+panX, y:by*zoom+panY};
+  // 위치별로 가장 최신 공연 1개만 매핑
+  // 각 공연의 그리드 점을 미리 계산해서 closest 그리드 점에 배정
+  function latLngToBase(lat,lng){
+    return{
+      x:(lng-minLng)/(maxLng-minLng)*(W-50)+25,
+      y:(maxLat-lat)/(maxLat-minLat)*(H-50)+25
+    };
   }
 
-  function drawStar(cx,cy,r,color){
-    const outer=r,inner=r*0.45;
+  // 공연을 날짜 내림차순 정렬
+  const sorted=[...events].filter(m=>m.lat!=null&&m.lng!=null)
+    .sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  // 각 그리드 셀에 가장 최신 공연 1개만 배정
+  // key: "col_row" → event
+  const COLS=80, ROWS=100;
+  function getCell(lat,lng){
+    const ci=Math.round((lng-minLng)/(maxLng-minLng)*(COLS-1));
+    const ri=Math.round((maxLat-lat)/(maxLat-minLat)*(ROWS-1));
+    return ci+'_'+ri;
+  }
+  const markerMap={};
+  sorted.forEach(m=>{
+    const cell=getCell(m.lat,m.lng);
+    if(!markerMap[cell]) markerMap[cell]=m; // 최신 공연만
+  });
+
+  // 화면 좌표 변환
+  function toXY(lat,lng){
+    const b=latLngToBase(lat,lng);
+    return{x:b.x*zoom+panX, y:b.y*zoom+panY};
+  }
+
+  function drawStar(cx,cy,color){
+    const outer=STAR_R, inner=STAR_R*0.45;
     ctx.beginPath();
     for(let i=0;i<10;i++){
       const angle=(i*Math.PI/5)-Math.PI/2;
@@ -1181,16 +1208,7 @@ function initStatsMap(events){
     ctx.fill();
   }
 
-  function nearestMarker(gx,gy,step){
-    for(const m of events){
-      if(m.lat==null||m.lng==null) continue;
-      const p=toXY(m.lat,m.lng);
-      if(Math.hypot(p.x-gx,p.y-gy)<step*1.0) return m;
-    }
-    return null;
-  }
-
-  const COLS=50, ROWS=60;
+  // 랜드마스크 미리 계산 (COLS x ROWS)
   const latGrid=[], lngGrid=[];
   for(let j=0;j<ROWS;j++) latGrid.push(maxLat-(j/(ROWS-1))*(maxLat-minLat));
   for(let i=0;i<COLS;i++) lngGrid.push(minLng+(i/(COLS-1))*(maxLng-minLng));
@@ -1201,23 +1219,23 @@ function initStatsMap(events){
   }
 
   function redraw(){
-    const step=BASE_STEP*zoom;
-    const r=BASE_R*Math.min(zoom,1.8);
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle='#fff';
     ctx.fillRect(0,0,W,H);
+
     for(let j=0;j<ROWS;j++){
       for(let i=0;i<COLS;i++){
         if(!landMask[j][i]) continue;
         const{x,y}=toXY(latGrid[j],lngGrid[i]);
-        if(x<-step||x>W+step||y<-step||y>H+step) continue;
-        const m=nearestMarker(x,y,step);
+        if(x<-STAR_R||x>W+STAR_R||y<-STAR_R||y>H+STAR_R) continue;
+        const cell=i+'_'+j;
+        const m=markerMap[cell];
         if(m){
-          drawStar(x,y,r+1.5*Math.min(zoom,1.8),yc[new Date(m.date).getFullYear()]||'#ddd');
+          drawStar(x,y,yc[new Date(m.date).getFullYear()]||'#ddd');
         } else {
           ctx.fillStyle='#d8d8d8';
           ctx.beginPath();
-          ctx.arc(x,y,r,0,Math.PI*2);
+          ctx.arc(x,y,DOT_R,0,Math.PI*2);
           ctx.fill();
         }
       }
@@ -1229,18 +1247,17 @@ function initStatsMap(events){
   // 줌 버튼
   const zoomIn=document.getElementById('mapZoomIn');
   const zoomOut=document.getElementById('mapZoomOut');
-  if(zoomIn) zoomIn.onclick=function(){zoom=Math.min(5,zoom*1.4);redraw();};
-  if(zoomOut) zoomOut.onclick=function(){zoom=Math.max(0.8,zoom/1.4);redraw();};
+  if(zoomIn) zoomIn.onclick=function(){zoom=Math.min(6,zoom*1.5);redraw();};
+  if(zoomOut) zoomOut.onclick=function(){zoom=Math.max(0.8,zoom/1.5);redraw();};
 
-  // 드래그 팬 (마우스)
+  // 드래그 팬
+  let isPanning=false,lastX=0,lastY=0;
   canvas.onmousedown=function(e){isPanning=true;lastX=e.clientX;lastY=e.clientY;};
   window.addEventListener('mousemove',function(e){
     if(!isPanning) return;
-    const scale=W/canvas.getBoundingClientRect().width;
-    panX+=(e.clientX-lastX)*scale;
-    panY+=(e.clientY-lastY)*scale;
-    lastX=e.clientX;lastY=e.clientY;
-    redraw();
+    const sc=W/canvas.getBoundingClientRect().width;
+    panX+=(e.clientX-lastX)*sc; panY+=(e.clientY-lastY)*sc;
+    lastX=e.clientX; lastY=e.clientY; redraw();
   });
   window.addEventListener('mouseup',function(){isPanning=false;});
 
@@ -1250,31 +1267,29 @@ function initStatsMap(events){
   canvas.addEventListener('touchmove',e=>{
     if(!lt) return;
     const t=e.touches[0];
-    const scale=W/canvas.getBoundingClientRect().width;
-    panX+=(t.clientX-lt.clientX)*scale;
-    panY+=(t.clientY-lt.clientY)*scale;
+    const sc=W/canvas.getBoundingClientRect().width;
+    panX+=(t.clientX-lt.clientX)*sc; panY+=(t.clientY-lt.clientY)*sc;
     lt=t; redraw(); e.preventDefault();
   },{passive:false});
   canvas.addEventListener('touchend',()=>{lt=null;},{passive:true});
 
-  // 클릭 툴팁
+  // 툴팁 — 가장 가까운 마커
   const tooltip=document.getElementById('mapTooltip');
   canvas.onclick=function(e){
     if(!tooltip) return;
     const rect=canvas.getBoundingClientRect();
-    const scale=W/rect.width;
-    const mx=(e.clientX-rect.left)*scale;
-    const my=(e.clientY-rect.top)*scale;
-    const step=BASE_STEP*zoom;
-    let hit=null,hitX=0,hitY=0;
-    events.forEach(m=>{
-      if(m.lat==null||m.lng==null) return;
+    const sc=W/rect.width;
+    const mx=(e.clientX-rect.left)*sc;
+    const my=(e.clientY-rect.top)*sc;
+    let hit=null, hitDist=Infinity, hitX=0, hitY=0;
+    Object.values(markerMap).forEach(m=>{
       const{x,y}=toXY(m.lat,m.lng);
-      if(Math.hypot(mx-x,my-y)<step*1.5){hit=m;hitX=x;hitY=y;}
+      const d=Math.hypot(mx-x,my-y);
+      if(d<20&&d<hitDist){hit=m;hitDist=d;hitX=x;hitY=y;}
     });
     if(hit){
-      tooltip.style.left=(hitX/scale)+'px';
-      tooltip.style.top=(hitY/scale)+'px';
+      tooltip.style.left=(hitX/sc)+'px';
+      tooltip.style.top=(hitY/sc)+'px';
       tooltip.innerHTML='<b>'+(hit.title||hit.venue||'공연')+'</b><br>'+hit.date;
       tooltip.style.display='block';
       setTimeout(()=>{tooltip.style.display='none';},3000);
@@ -1283,8 +1298,6 @@ function initStatsMap(events){
     }
   };
 }
-
-
 function switchStatsYear(y){
   if(!y||y===''||y==='__none__') return;
   window._statsYear=y;
