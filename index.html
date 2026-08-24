@@ -466,7 +466,7 @@
     <button class="f-tab active" onclick="setFilter(this,'upcoming')" data-f="upcoming">🎟️</button>
     <button class="f-tab"        onclick="setFilter(this,'archive')"  data-f="archive">🎞️</button>
     <button class="f-tab"        onclick="setFilter(this,'stats')"    data-f="stats">🌀</button>
-    <button class="f-tab"        onclick="setFilter(this,'all')"      data-f="all">🔭</button>
+<button class="f-tab"        onclick="setFilter(this,'all')"      data-f="all">🔭</button>
   </div>
   <div class="search-row" id="searchRow" style="display:none">
     <div class="search-wrap" id="searchWrap">
@@ -925,7 +925,7 @@ function renderStats(){
   if(!window._statsSeg) window._statsSeg='artist';
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
-  const evs = activeYear==='all' ? past : (byYear[activeYear]||[]);
+  const evs = activeYear==='all'||activeYear==='map' ? past : (byYear[activeYear]||[]);
 
   const yearColors = {
     2023:'#ffefa6', 2024:'#F8D4FC', 2025:'#d4e89a',
@@ -946,22 +946,30 @@ function renderStats(){
   let html=`<div class="stats-header">
     <div class="stats-year-tabs">
       <button class="stats-year-btn${activeYear==='all'?' active':''}" onclick="switchStatsYear('all')">전체</button>
-      <select class="stats-year-select${activeYear!=='all'?' active':''}" onchange="switchStatsYear(this.value)" style="color:${activeYear!=='all'?'var(--text)':'var(--text3)'}">
-        <option value="" ${activeYear==='all'?'selected':''} disabled>연도</option>
+      <select class="stats-year-select${activeYear!=='all'&&activeYear!=='map'?' active':''}" onchange="switchStatsYear(this.value)" style="color:${activeYear!=='all'&&activeYear!=='map'?'var(--text)':'var(--text3)'}">
+        <option value="" ${activeYear==='all'||activeYear==='map'?'selected':''} disabled>연도</option>
         ${yearSelectOptions}
       </select>
+      <button class="stats-year-btn${activeYear==='map'?' active':''}" onclick="switchStatsYear('map')">🗺️</button>
     </div>
     <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>
+${activeYear!=='map'?`
     <div class="stats-seg">
       ${activeYear==='all'?`<button class="stats-seg-btn${activeSeg==='yearly'?' active':''}" onclick="switchStatsSeg('yearly')">연도별</button>`:''}
       <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
       <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
       <button class="stats-seg-btn${activeSeg==='spend'?' active':''}" onclick="switchStatsSeg('spend')">지출</button>
-      <button class="stats-seg-btn${activeSeg==='map'?' active':''}" onclick="switchStatsSeg('map')">지도</button>
-    </div>
+    </div>`:''}
   </div>`;
 
-  if(activeSeg==='artist'){
+  if(activeYear==='map'){
+    const withAddr=past.filter(e=>e.address);
+    if(!withAddr.length){
+      html+=`<div class="empty"><div class="empty-icon">📍</div><div class="empty-t" style="font-size:13px">주소 정보가 없어요</div><div class="empty-s" style="font-size:11px;margin-top:4px">공연 수정에서 주소를 입력해주세요</div></div>`;
+    } else {
+      html+=`<div style="padding:4px 0 0;font-size:12px;color:var(--text3)">${withAddr.length}개 공연장</div><div id="mapTabEl" style="margin:8px 0 0;height:420px;border-radius:14px;overflow:hidden;border:0.5px solid var(--border-strong)"></div>`;
+    }
+  } else if(activeSeg==='artist'){
     const counts={};
     const latest={};
     evs.forEach(e=>{
@@ -1066,14 +1074,6 @@ function renderStats(){
         html+=`</div>`;
       }
     }
-  } else if(activeSeg==='map'){
-    // 지도 — 주소 있는 공연장 표시
-    const withAddr=evs.filter(e=>e.address);
-    if(!withAddr.length){
-      html+=`<div class="empty"><div class="empty-icon" style="font-size:24px">📍</div><div class="empty-t" style="font-size:13px">주소 정보가 없어요</div><div class="empty-s" style="font-size:11px">공연 수정에서 주소를 입력해주세요</div></div>`;
-    } else {
-      html+=`<div id="statsMap"></div>`;
-    }
   } else if(activeSeg==='yearly'){
     // 연도별 공연 수 비교
     const yearList=Object.keys(byYear).sort((a,b)=>b-a);
@@ -1094,15 +1094,27 @@ function renderStats(){
 
   el.innerHTML=html;
 
-  // 지도 초기화
-  if(activeSeg==='map'){
-    const withAddr=evs.filter(e=>e.address);
-    if(withAddr.length) initStatsMap(withAddr);
+}
+
+
+/* ── map tab ── */
+function renderMapTab(){
+  const el=document.getElementById('mainContent');
+  const withAddr=allEvents.filter(e=>e.address);
+  if(!withAddr.length){
+    el.innerHTML=`<div class="empty">
+      <div class="empty-icon">🗺️</div>
+      <div class="empty-t">주소 정보가 없어요</div>
+      <div class="empty-s" style="font-size:11px;margin-top:4px">공연 수정에서 주소를 입력해주세요</div>
+    </div>`;
+    return;
   }
+  el.innerHTML=`<div style="padding:12px 20px 0;font-size:12px;color:var(--text3)">${withAddr.length}개 공연장</div><div id="mapTabEl" style="margin:8px 20px 20px;height:420px;border-radius:14px;overflow:hidden;border:0.5px solid var(--border-strong)"></div>`;
+  setTimeout(()=>initStatsMap(withAddr), 50);
 }
 
 function initStatsMap(events){
-  const mapEl=document.getElementById('statsMap');
+  const mapEl=document.getElementById('mapTabEl')||document.getElementById('statsMap');
   if(!mapEl) return;
 
   // 이미 초기화된 지도 제거
@@ -1158,7 +1170,7 @@ function initStatsMap(events){
 function switchStatsYear(y){
   if(!y) return;
   window._statsYear=y;
-  if(y!=='all'&&window._statsSeg==='yearly') window._statsSeg='artist';
+  if(y!=='all'&&y!=='map'&&window._statsSeg==='yearly') window._statsSeg='artist';
   renderStats();
 }
 function switchStatsSeg(s){ window._statsSeg=s; renderStats(); }
