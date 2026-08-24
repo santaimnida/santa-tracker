@@ -1262,6 +1262,7 @@ function submitEdit(){
   const date  =document.getElementById('eDate').value;
   const time  =document.getElementById('eTime').value;
   const venue =document.getElementById('eVenue').value.trim();
+  const address=document.getElementById('eAddress').value.trim();
   const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
   const rawETicket=document.getElementById('eTicket').value.trim();
   const ticket=rawETicket.startsWith('http')?'':rawETicket;
