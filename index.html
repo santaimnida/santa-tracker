@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>공연을 가자~ 그만 가자</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
   :root {
@@ -120,16 +122,22 @@
   .stats-header{padding:16px 21px 0}
 
   /* 연도: 밑줄 스타일 */
-  .stats-year-tabs{display:flex;gap:16px;margin-bottom:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .stats-year-tabs::-webkit-scrollbar{display:none}
+  .stats-year-tabs{display:flex;gap:16px;margin-bottom:4px}
   .stats-year-btn{
     background:none;border:none;padding:0 0 3px;
     font-size:14px;font-weight:600;font-family:var(--font);
-    color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;
+    color:var(--text3);cursor:pointer;white-space:nowrap;
     border-bottom:2px solid transparent;
     transition:color 0.12s,border-color 0.12s;
   }
   .stats-year-btn.active{color:var(--text);border-bottom-color:var(--text)}
+  .stats-year-select{
+    background:none;border:none;border-bottom:2px solid transparent;
+    font-size:14px;font-weight:600;font-family:var(--font);
+    color:var(--text3);cursor:pointer;padding:0 0 3px;
+    outline:none;-webkit-appearance:none;appearance:none;
+  }
+  .stats-year-select.active{color:var(--text);border-bottom-color:var(--text)}
 
   .stats-total-inline{font-size:12px;color:var(--text3);margin-top:10px;margin-bottom:14px}
 
@@ -438,6 +446,12 @@
 
   input[type="search"]::-webkit-search-cancel-button{display:none}
   input[type="search"]::-webkit-search-decoration{display:none}
+
+  /* ── map view ── */
+  #statsMap{height:360px;border-radius:12px;overflow:hidden;margin:12px 0}
+  .leaflet-container{font-family:var(--font)}
+  .map-loading{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px}
+
 </style>
 </head>
 <body>
@@ -507,6 +521,10 @@
         <div class="ac-dropdown" id="fVenueDrop"></div>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-label">주소 (지도용, 선택)</div>
+      <input class="form-input" id="fAddress" placeholder="서울특별시 마포구 ..." autocomplete="off"/>
+    </div>
     <div class="form-row-half">
       <div class="form-row">
         <div class="form-label">티켓값 (선택)</div>
@@ -564,6 +582,10 @@
         <input class="form-input" id="eVenue" placeholder="공연장 이름" oninput="showAc('eVenue','eVenueDrop','venue')" onfocus="showAc('eVenue','eVenueDrop','venue')" onblur="hideAc('eVenueDrop')" autocomplete="off"/>
         <div class="ac-dropdown" id="eVenueDrop"></div>
       </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">주소 (지도용, 선택)</div>
+      <input class="form-input" id="eAddress" placeholder="서울특별시 마포구 ..." autocomplete="off"/>
     </div>
     <div class="form-row-half">
       <div class="form-row">
@@ -917,19 +939,25 @@ function renderStats(){
   const uniqueVenues = new Set(evs.filter(e=>e.venue).map(e=>e.venue));
 
   // header
+  const yearSelectOptions = years.map(y=>
+    `<option value="${y}"${y==activeYear?'selected':''}>${y}</option>`
+  ).join('');
+
   let html=`<div class="stats-header">
     <div class="stats-year-tabs">
-      <button class="stats-year-btn${'all'==activeYear?' active':''}" onclick="switchStatsYear('all')">전체</button>`;
-  years.forEach(y=>{
-    html+=`<button class="stats-year-btn${y==activeYear?' active':''}" onclick="switchStatsYear('${y}')">${y}</button>`;
-  });
-  html+=`</div>
+      <button class="stats-year-btn${activeYear==='all'?' active':''}" onclick="switchStatsYear('all')">전체</button>
+      <select class="stats-year-select${activeYear!=='all'?' active':''}" onchange="switchStatsYear(this.value)" style="color:${activeYear!=='all'?'var(--text)':'var(--text3)'}">
+        <option value="" ${activeYear==='all'?'selected':''} disabled>연도</option>
+        ${yearSelectOptions}
+      </select>
+    </div>
     <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>
     <div class="stats-seg">
       ${activeYear==='all'?`<button class="stats-seg-btn${activeSeg==='yearly'?' active':''}" onclick="switchStatsSeg('yearly')">연도별</button>`:''}
       <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
       <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
       <button class="stats-seg-btn${activeSeg==='spend'?' active':''}" onclick="switchStatsSeg('spend')">지출</button>
+      <button class="stats-seg-btn${activeSeg==='map'?' active':''}" onclick="switchStatsSeg('map')">지도</button>
     </div>
   </div>`;
 
@@ -1038,9 +1066,17 @@ function renderStats(){
         html+=`</div>`;
       }
     }
+  } else if(activeSeg==='map'){
+    // 지도 — 주소 있는 공연장 표시
+    const withAddr=evs.filter(e=>e.address);
+    if(!withAddr.length){
+      html+=`<div class="empty"><div class="empty-icon" style="font-size:24px">📍</div><div class="empty-t" style="font-size:13px">주소 정보가 없어요</div><div class="empty-s" style="font-size:11px">공연 수정에서 주소를 입력해주세요</div></div>`;
+    } else {
+      html+=`<div id="statsMap"></div>`;
+    }
   } else if(activeSeg==='yearly'){
     // 연도별 공연 수 비교
-    const yearList=Object.keys(byYear).sort((a,b)=>a-b);
+    const yearList=Object.keys(byYear).sort((a,b)=>b-a);
     const maxCount=Math.max(...yearList.map(y=>byYear[y].length));
     html+=`<div class="stats-list">`;
     yearList.forEach(y=>{
@@ -1057,9 +1093,70 @@ function renderStats(){
   }
 
   el.innerHTML=html;
+
+  // 지도 초기화
+  if(activeSeg==='map'){
+    const withAddr=evs.filter(e=>e.address);
+    if(withAddr.length) initStatsMap(withAddr);
+  }
+}
+
+function initStatsMap(events){
+  const mapEl=document.getElementById('statsMap');
+  if(!mapEl) return;
+
+  // 이미 초기화된 지도 제거
+  if(window._statsLeaflet){ window._statsLeaflet.remove(); window._statsLeaflet=null; }
+
+  const map=L.map(mapEl,{zoomControl:true,scrollWheelZoom:false});
+  window._statsLeaflet=map;
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:19
+  }).addTo(map);
+
+  const bounds=[];
+  const geocodeQueue=[...events];
+  const markers=[];
+
+  // 연도별 색상
+  const yearColors={'2023':'#ffefa6','2024':'#F8D4FC','2025':'#d4e89a','2026':'#a8d1f0','2027':'#ffb9c6'};
+
+  async function geocodeNext(){
+    if(!geocodeQueue.length){
+      if(bounds.length) map.fitBounds(bounds,{padding:[20,20]});
+      return;
+    }
+    const e=geocodeQueue.shift();
+    try{
+      const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(e.address)}&limit=1`,{
+        headers:{'Accept-Language':'ko'}
+      });
+      const data=await res.json();
+      if(data&&data[0]){
+        const lat=parseFloat(data[0].lat);
+        const lng=parseFloat(data[0].lon);
+        const year=new Date(e.date).getFullYear();
+        const color=yearColors[year]||'#a8d1f0';
+
+        const icon=L.divIcon({
+          html:`<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid rgba(0,0,0,0.3);"></div>`,
+          className:'',iconSize:[12,12],iconAnchor:[6,6]
+        });
+
+        const marker=L.marker([lat,lng],{icon}).addTo(map);
+        marker.bindPopup(`<b>${e.venue||e.address}</b><br>${e.artist}<br>${e.date}`);
+        bounds.push([lat,lng]);
+      }
+    }catch(err){}
+    // Nominatim rate limit: 1 req/sec
+    setTimeout(geocodeNext, 1100);
+  }
+  geocodeNext();
 }
 
 function switchStatsYear(y){
+  if(!y) return;
   window._statsYear=y;
   if(y!=='all'&&window._statsSeg==='yearly') window._statsSeg='artist';
   renderStats();
@@ -1077,6 +1174,7 @@ function openAdd(){
   document.getElementById('fTitle').value='';
   document.getElementById('fTime').value='';
   document.getElementById('fVenue').value='';
+  document.getElementById('fAddress').value='';
   document.getElementById('fPrice').value='';
   document.getElementById('fTicket').value='';
   document.getElementById('fImage').value='';
@@ -1096,7 +1194,8 @@ async function submitAdd(){
   const title =document.getElementById('fTitle').value.trim();
   const date  =document.getElementById('fDate').value;
   const time  =document.getElementById('fTime').value;
-  const venue =document.getElementById('fVenue').value.trim();
+  const venue  =document.getElementById('fVenue').value.trim();
+  const address=document.getElementById('fAddress').value.trim();
   const price =document.getElementById('fPrice').value.replace(/[^0-9]/g,'');
   // 브라우저 자동완성 방지: URL이 ticket에 들어간 경우 차단
   const rawTicket=document.getElementById('fTicket').value.trim();
@@ -1107,7 +1206,7 @@ async function submitAdd(){
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
 
-  const newEvent={id:genId(),artist,title,date,time,venue,price:price!==''?Number(price):null,ticket,image,type:'concert'};
+  const newEvent={id:genId(),artist,title,date,time,venue,address,price:price!==''?Number(price):null,ticket,image,type:'concert'};
   allEvents.push(newEvent);
   saveEvents();
   renderAll();
@@ -1117,6 +1216,7 @@ async function submitAdd(){
   document.getElementById('fDate').value='';
   document.getElementById('fTime').value='';
   document.getElementById('fVenue').value='';
+  document.getElementById('fAddress').value='';
   document.getElementById('fPrice').value='';
   document.getElementById('fTicket').value='';
   document.getElementById('fImage').value='';
@@ -1146,7 +1246,8 @@ function openEdit(ev,id){
   document.getElementById('eTitle').value =e.title;
   document.getElementById('eDate').value  =e.date;
   document.getElementById('eTime').value  =e.time||'';
-  document.getElementById('eVenue').value =e.venue||'';
+  document.getElementById('eVenue').value  =e.venue||'';
+  document.getElementById('eAddress').value=e.address||'';
   document.getElementById('ePrice').value =e.price!=null?e.price:'';
   document.getElementById('eTicket').value=e.ticket||'';
   document.getElementById('eImage').value=e.image||'';
@@ -1170,7 +1271,7 @@ function submitEdit(){
   if(!date)  {toast('날짜를 선택해주세요');return;}
   const idx=allEvents.findIndex(e=>e.id===id);
   if(idx===-1) return;
-  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue,price:price!==''?Number(price):null,ticket,image};
+  allEvents[idx]={...allEvents[idx],artist,title,date,time,venue,address,price:price!==''?Number(price):null,ticket,image};
   saveEvents(); renderAll();
   document.getElementById('editOverlay').classList.remove('open');
   toast('수정됐어요!');
@@ -1452,7 +1553,7 @@ function loadData(){
       .map(r=>({
         id: r.id||(r.artist+'|'+r.date+'|'+r.title),
         artist:r.artist, title:r.title, date:r.date,
-        time:r.time||'', venue:r.venue||'',
+        time:r.time||'', venue:r.venue||'', address:r.address||'',
         price:r.price!=null&&r.price!==''?Number(r.price):null, ticket:r.ticket||'', image:r.image||'',
         type:'concert',
       }));
