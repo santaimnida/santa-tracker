@@ -922,7 +922,7 @@ function renderStats(){
     (byYear[y]=byYear[y]||[]).push(e);
   });
   const years=Object.keys(byYear).sort((a,b)=>b-a);
-  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all')) window._statsYear='all';
+  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all'&&window._statsYear!=='map')) window._statsYear='all';
   if(!window._statsSeg) window._statsSeg='artist';
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
