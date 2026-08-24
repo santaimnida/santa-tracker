@@ -839,36 +839,37 @@ function renderStats(){
     (byYear[y]=byYear[y]||[]).push(e);
   });
   const years=Object.keys(byYear).sort((a,b)=>b-a);
-  if(!window._statsYear||!byYear[window._statsYear]) window._statsYear=years[0];
-  if(!window._statsSeg) window._statsSeg='artist';
+  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all'&&window._statsYear!=='map')) window._statsYear='all';
+  if(!window._statsSeg) window._statsSeg='yearly';
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
-  const evs=byYear[activeYear]||[];
-  const barColor = activeYear == 2023 ? '#ffefa6'
-                 : activeYear == 2024 ? '#F8D4FC'
-                 : activeYear == 2025 ? '#d4e89a'
-                 : activeYear == 2026 ? '#a8d1f0'
-                 : activeYear == 2027 ? '#ffb9c6'
-                 : '#a48f7b';
+  const evs=activeYear==='all'||activeYear==='map' ? past : (byYear[activeYear]||[]);
+  const barColor=getYearColor(activeYear==='all'||activeYear==='map'?years[0]:activeYear);
 
-    const uniqueArtists = new Set();
-    evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
-    const uniqueVenues = new Set(evs.filter(e=>e.venue).map(e=>e.venue));
+  const uniqueArtists=new Set();
+  evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
+  const uniqueVenues=new Set(evs.filter(e=>e.venue).map(e=>e.venue));
 
-  // header: 연도 밑줄 탭 + 총 공연수 작게
-  let html=`<div class="stats-header">
-    <div class="stats-year-tabs">`;
-  years.forEach(y=>{
-    html+=`<button class="stats-year-btn${y==activeYear?' active':''}" onclick="switchStatsYear('${y}')">${y}</button>`;
-  });
-  html+=`</div>
-    <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>
-    <div class="stats-seg">
-      <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
-      <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
-      <button class="stats-seg-btn${activeSeg==='spend'?' active':''}" onclick="switchStatsSeg('spend')">지출</button>
-    </div>
-  </div>`;
+  const yearSelectOptions=years.map(y=>`<option value="${y}"${y==activeYear?'selected':''}>${y}</option>`).join('');
+  let selectActive=activeYear!=='all'&&activeYear!=='map'?' active':'';
+  let selectColor=activeYear!=='all'&&activeYear!=='map'?'var(--text)':'var(--text3)';
+
+  let segHtml='';
+  if(activeYear!=='map'){
+    const yb=activeSeg==='yearly'?' active':'';
+    const ab=activeSeg==='artist'?' active':'';
+    const vb=activeSeg==='venue'?' active':'';
+    const sb=activeSeg==='spend'?' active':'';
+    const yearlyBtn=activeYear==='all'
+      ?`<button class="stats-seg-btn${yb}" onclick="switchStatsSeg('yearly')">연도별</button>`
+      :'';
+    segHtml=`<div class="stats-seg">${yearlyBtn}<button class="stats-seg-btn${ab}" onclick="switchStatsSeg('artist')">아티스트</button><button class="stats-seg-btn${vb}" onclick="switchStatsSeg('venue')">공연장</button><button class="stats-seg-btn${sb}" onclick="switchStatsSeg('spend')">지출</button></div>`;
+  }
+
+  const allActive=activeYear==='all'?' active':'';
+  const mapActive=activeYear==='map'?' active':'';
+  const selOpts=`<option value="__none__" ${activeYear==='all'||activeYear==='map'?'selected':''} disabled>연도</option>${yearSelectOptions}`;
+  let html=`<div class="stats-header"><div class="stats-year-tabs"><button class="stats-year-btn${allActive}" onclick="switchStatsYear('all')">전체</button><select class="stats-year-select${selectActive}" onchange="switchStatsYear(this.value)" style="color:${selectColor}">${selOpts}</select><button class="stats-year-btn${mapActive}" onclick="switchStatsYear('map')">🗺️</button></div><div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>${segHtml}</div>`;
 
   if(activeSeg==='artist'){
     const counts={};
@@ -1071,7 +1072,13 @@ function initStatsMap(events){
   };
 }
 
-function switchStatsYear(y){ window._statsYear=y; renderStats(); }
+function switchStatsYear(y){
+  if(!y||y==='__none__') return;
+  window._statsYear=y;
+  if(y==='all') window._statsSeg='yearly';
+  else if(y!=='map'&&window._statsSeg==='yearly') window._statsSeg='artist';
+  renderStats();
+}
 function switchStatsSeg(s){ window._statsSeg=s; renderStats(); }
 
 /* ── add form ── */
@@ -1254,6 +1261,8 @@ function getYearColor(yr){
   const idx=2022-y;
   return EXTRA_YEAR_COLORS[Math.max(0,Math.min(idx,EXTRA_YEAR_COLORS.length-1))];
 }
+
+
 
 /* ── auto time format ── */
 function autoTime(input){
