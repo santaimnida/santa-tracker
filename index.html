@@ -894,25 +894,27 @@ function renderStats(){
     (byYear[y]=byYear[y]||[]).push(e);
   });
   const years=Object.keys(byYear).sort((a,b)=>b-a);
-  if(!window._statsYear||!byYear[window._statsYear]) window._statsYear=years[0];
+  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all')) window._statsYear=years[0];
   if(!window._statsSeg) window._statsSeg='artist';
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
-  const evs=byYear[activeYear]||[];
-  const barColor = activeYear == 2023 ? '#ffefa6'
-                 : activeYear == 2024 ? '#F8D4FC'
-                 : activeYear == 2025 ? '#d4e89a'
-                 : activeYear == 2026 ? '#a8d1f0'
-                 : activeYear == 2027 ? '#ffb9c6'
-                 : '#a48f7b';
+  const evs = activeYear==='all' ? past : (byYear[activeYear]||[]);
 
-    const uniqueArtists = new Set();
-    evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
-    const uniqueVenues = new Set(evs.filter(e=>e.venue).map(e=>e.venue));
+  const yearColors = {
+    2023:'#ffefa6', 2024:'#F8D4FC', 2025:'#d4e89a',
+    2026:'#a8d1f0', 2027:'#ffb9c6'
+  };
+  const barColor = activeYear==='all' ? '#C4C4C4'
+    : (yearColors[activeYear] || '#a48f7b');
 
-  // header: 연도 밑줄 탭 + 총 공연수 작게
+  const uniqueArtists = new Set();
+  evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
+  const uniqueVenues = new Set(evs.filter(e=>e.venue).map(e=>e.venue));
+
+  // header
   let html=`<div class="stats-header">
-    <div class="stats-year-tabs">`;
+    <div class="stats-year-tabs">
+      <button class="stats-year-btn${'all'==activeYear?' active':''}" onclick="switchStatsYear('all')">전체</button>`;
   years.forEach(y=>{
     html+=`<button class="stats-year-btn${y==activeYear?' active':''}" onclick="switchStatsYear('${y}')">${y}</button>`;
   });
@@ -922,6 +924,7 @@ function renderStats(){
       <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
       <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
       <button class="stats-seg-btn${activeSeg==='spend'?' active':''}" onclick="switchStatsSeg('spend')">지출</button>
+      <button class="stats-seg-btn${activeSeg==='yearly'?' active':''}" onclick="switchStatsSeg('yearly')">연도별</button>
     </div>
   </div>`;
 
@@ -1030,6 +1033,22 @@ function renderStats(){
         html+=`</div>`;
       }
     }
+  } else if(activeSeg==='yearly'){
+    // 연도별 공연 수 비교
+    const yearList=Object.keys(byYear).sort((a,b)=>a-b);
+    const maxCount=Math.max(...yearList.map(y=>byYear[y].length));
+    html+=`<div class="stats-list">`;
+    yearList.forEach(y=>{
+      const count=byYear[y].length;
+      const pct=Math.round((count/maxCount)*100);
+      const col=yearColors[y]||'#a48f7b';
+      html+=`<div class="stats-row">
+        <div class="stats-name" style="font-weight:600">${y}</div>
+        <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%;background:${col}"></div></div>
+        <div class="stats-count">${count}회</div>
+      </div>`;
+    });
+    html+=`</div>`;
   }
 
   el.innerHTML=html;
