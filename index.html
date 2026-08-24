@@ -119,7 +119,8 @@
   }
 
   /* ── stats tab ── */
-  .stats-header{padding:16px 21px 0}
+  .stats-header{padding:16px 20px 14px}
+  .stats-header .stats-seg{margin-left:0;margin-right:0}
 
   /* 연도: 밑줄 스타일 */
   .stats-year-tabs{display:flex;gap:16px;margin-bottom:4px}
@@ -142,7 +143,7 @@
   .stats-total-inline{font-size:12px;color:var(--text3);margin-top:10px;margin-bottom:14px}
 
   /* 아티스트 / 공연장 세그먼트 */
-  .stats-seg{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin-top:14px}
+  .stats-seg{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin:14px 0 0}
   .stats-seg-btn{
     flex:1;height:28px;border:none;border-radius:8px;
     font-size:12px;font-weight:500;font-family:var(--font);
@@ -151,7 +152,7 @@
   }
   .stats-seg-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
 
-  .stats-list{padding:6px 21px 0}
+  .stats-list{padding:6px 20px 0}
   .stats-row{display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);gap:10px;min-height:40px}
   .stats-row:last-child{border-bottom:none}
   .stats-name{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;font-family:var(--font)}
@@ -952,20 +953,20 @@ function renderStats(){
       </select>
       <button class="stats-year-btn${activeYear==='map'?' active':''}" onclick="switchStatsYear('map')">🗺️</button>
     </div>
-    <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>
-  </div>`;
+    <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>`;
 
   if(activeYear!=='map'){
     const yearlyBtn = activeYear==='all'
       ? '<button class="stats-seg-btn'+(activeSeg==='yearly'?' active':'')+'" onclick="switchStatsSeg(\'yearly\')">연도별</button>'
       : '';
-    html += '<div class="stats-seg">'
+    html += '<div class="stats-seg" style="margin:0 20px 14px">'
       + yearlyBtn
       + '<button class="stats-seg-btn'+(activeSeg==='artist'?' active':'')+'" onclick="switchStatsSeg(\'artist\')">아티스트</button>'
       + '<button class="stats-seg-btn'+(activeSeg==='venue'?' active':'')+'" onclick="switchStatsSeg(\'venue\')">공연장</button>'
       + '<button class="stats-seg-btn'+(activeSeg==='spend'?' active':'')+'" onclick="switchStatsSeg(\'spend\')">지출</button>'
       + '</div>';
   }
+  html += '</div>'; // close stats-header
 
   if(activeYear==='map'){
     const withAddr=past.filter(e=>e.address);
