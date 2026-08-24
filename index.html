@@ -1059,7 +1059,17 @@ function renderStats(){
   el.innerHTML=html;
 }
 
-function switchStatsYear(y){ window._statsYear=y; if(y!=='all'&&window._statsSeg==='yearly') window._statsSeg='artist'; renderStats(); }
+function switchStatsYear(y){
+  window._statsYear=y;
+  if(y!=='all'&&window._statsSeg==='yearly') window._statsSeg='artist';
+  renderStats();
+  // 선택된 연도 탭이 보이도록 스크롤
+  setTimeout(()=>{
+    const tabs=document.querySelector('.stats-year-tabs');
+    const active=tabs&&tabs.querySelector('.stats-year-btn.active');
+    if(active) active.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  }, 50);
+}
 function switchStatsSeg(s){ window._statsSeg=s; renderStats(); }
 
 /* ── add form ── */
