@@ -674,7 +674,8 @@ function getFiltered(){
 /* ── render ── */
 function renderAll(){
   if(curFilter==='stats'){ renderStats(); return; }
-  if(curFilter==='archive'){ renderArchive(); return; }  const filtered=getFiltered();
+  if(curFilter==='archive'){ renderArchive(); return; }
+  const filtered=getFiltered();
   const el=document.getElementById('mainContent');
   if(!filtered.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">🎤</div><div class="empty-t">공연이 없어요</div></div>`;
@@ -979,7 +980,7 @@ function renderStats(){
     } else {
       html+=`<div class="empty"><div class="empty-icon" style="font-size:24px">📍</div><div class="empty-t" style="font-size:13px">공연장 정보가 없어요</div></div>`;
     }
-  } else {
+  } else if(activeSeg==='spend'){
     // 지출 통계
     const paid=evs.filter(e=>e.price!=null&&e.price>0);
     const free=evs.filter(e=>e.price!=null&&e.price===0);
