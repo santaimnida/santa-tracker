@@ -166,26 +166,26 @@
     max-height:85vh;overflow-y:auto;
   }
   .panel-handle{width:34px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 16px}
-  .panel-title{font-size:16px;font-weight:600;margin-bottom:16px}
+  .panel-title{font-size:15px;font-weight:600;margin-bottom:12px}
 
-  .form-row{margin-bottom:12px}
-  .form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px}
+  .form-row{margin-bottom:8px}
+  .form-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
   .form-input{
     width:100%;background:var(--surface2);border:0.5px solid var(--border-strong);
-    border-radius:10px;padding:10px 13px;font-size:14px;font-family:var(--font);
+    border-radius:8px;padding:8px 11px;font-size:13px;font-family:var(--font);
     color:var(--text);outline:none;min-width:0;box-sizing:border-box;
   }
   input[type="date"].form-input{
     -webkit-appearance:none;appearance:none;font-size:13px;padding:10px 8px;
   }
   .form-input:focus{border-color:rgba(0,0,0,0.3)}
-  .form-row-half{display:flex;gap:10px;margin-bottom:12px}
+  .form-row-half{display:flex;gap:8px;margin-bottom:8px}
   .form-row-half .form-row{flex:1;margin-bottom:0;min-width:0}
   .form-row-half .form-row:last-child{flex:0 0 90px}
 
   .btn-submit{
-    width:100%;height:48px;background:var(--text);color:var(--bg);
-    border:none;border-radius:12px;font-size:15px;font-weight:600;
+    width:100%;height:42px;background:var(--text);color:var(--bg);
+    border:none;border-radius:10px;font-size:14px;font-weight:600;
     font-family:var(--font);cursor:pointer;margin-top:4px;
   }
   .btn-submit:active{opacity:0.7}
@@ -401,7 +401,7 @@
   .tag-input-wrap{
     display:flex;flex-direction:column;gap:6px;
     background:var(--surface2);border:0.5px solid var(--border-strong);
-    border-radius:10px;padding:8px 10px;cursor:text;
+    border-radius:8px;padding:6px 10px;cursor:text;
     position:relative;
   }
   .tag-input-wrap:focus-within{border-color:rgba(0,0,0,0.3)}
@@ -896,7 +896,7 @@ function renderStats(){
     (byYear[y]=byYear[y]||[]).push(e);
   });
   const years=Object.keys(byYear).sort((a,b)=>b-a);
-  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all')) window._statsYear=years[0];
+  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all')) window._statsYear='all';
   if(!window._statsSeg) window._statsSeg='artist';
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
@@ -923,10 +923,10 @@ function renderStats(){
   html+=`</div>
     <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>
     <div class="stats-seg">
+      ${activeYear==='all'?`<button class="stats-seg-btn${activeSeg==='yearly'?' active':''}" onclick="switchStatsSeg('yearly')">연도별</button>`:''}
       <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
       <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
       <button class="stats-seg-btn${activeSeg==='spend'?' active':''}" onclick="switchStatsSeg('spend')">지출</button>
-      <button class="stats-seg-btn${activeSeg==='yearly'?' active':''}" onclick="switchStatsSeg('yearly')">연도별</button>
     </div>
   </div>`;
 
@@ -1056,7 +1056,7 @@ function renderStats(){
   el.innerHTML=html;
 }
 
-function switchStatsYear(y){ window._statsYear=y; renderStats(); }
+function switchStatsYear(y){ window._statsYear=y; if(y!=='all'&&window._statsSeg==='yearly') window._statsSeg='artist'; renderStats(); }
 function switchStatsSeg(s){ window._statsSeg=s; renderStats(); }
 
 /* ── add form ── */
@@ -1085,8 +1085,11 @@ async function submitAdd(){
   const time  =document.getElementById('fTime').value;
   const venue =document.getElementById('fVenue').value.trim();
   const price =document.getElementById('fPrice').value.replace(/[^0-9]/g,'');
-  const ticket=document.getElementById('fTicket').value.trim();
-  const image=document.getElementById('fImage').value.trim();
+  // 브라우저 자동완성 방지: URL이 ticket에 들어간 경우 차단
+  const rawTicket=document.getElementById('fTicket').value.trim();
+  const rawImage=document.getElementById('fImage').value.trim();
+  const ticket=rawTicket.startsWith('http')?'':rawTicket;
+  const image=rawImage;
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fArtistText').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
@@ -1138,7 +1141,8 @@ function submitEdit(){
   const time  =document.getElementById('eTime').value;
   const venue =document.getElementById('eVenue').value.trim();
   const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
-  const ticket=document.getElementById('eTicket').value.trim();
+  const rawETicket=document.getElementById('eTicket').value.trim();
+  const ticket=rawETicket.startsWith('http')?'':rawETicket;
   const image=document.getElementById('eImage').value.trim();
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('eArtistText').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');return;}
