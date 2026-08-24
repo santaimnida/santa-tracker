@@ -973,7 +973,7 @@ function renderStats(){
   html += '</div>'; // close stats-header
 
   if(activeYear==='map'){
-    const withAddr=past.filter(e=>e.lat&&e.lng);
+    const withAddr=past.filter(e=>e.lat!=null&&e.lng!=null&&e.lat!==''&&e.lng!=='');
     if(!withAddr.length){
       html+=`<div class="empty"><div class="empty-icon">📍</div><div class="empty-t" style="font-size:13px">주소 정보가 없어요</div><div class="empty-s" style="font-size:11px;margin-top:4px">공연 수정에서 주소를 입력해주세요</div></div>`;
     } else {
@@ -1112,7 +1112,7 @@ function renderStats(){
 
 function renderMapTab(){
   const el=document.getElementById('mainContent');
-  const withCoords=allEvents.filter(e=>e.lat&&e.lng);
+  const withCoords=allEvents.filter(e=>e.lat!=null&&e.lng!=null&&e.lat!==''&&e.lng!=='');
   if(!withCoords.length){
     el.innerHTML=`<div class="empty">
       <div class="empty-icon">🗺️</div>
@@ -1170,7 +1170,7 @@ function initStatsMap(events){
 
   function nearestMarker(gx,gy){
     for(const m of events){
-      if(!m.lat||!m.lng) continue;
+      if(m.lat==null||m.lng==null||m.lat===''||m.lng==='') continue;
       const p=toXY(m.lat,m.lng);
       if(Math.hypot(p.x-gx,p.y-gy)<STEP*0.65) return m;
     }
@@ -1222,7 +1222,7 @@ function initStatsMap(events){
     const my=(e.clientY-rect.top)*sy;
     let hit=null;
     events.forEach(m=>{
-      if(!m.lat||!m.lng) return;
+      if(m.lat==null||m.lng==null) return;
       const{x,y}=toXY(m.lat,m.lng);
       if(Math.hypot(mx-x,my-y)<STEP*1.5) hit=m;
     });
@@ -1661,7 +1661,8 @@ function loadData(){
         id: r.id||(r.artist+'|'+r.date+'|'+r.title),
         artist:r.artist, title:r.title, date:r.date,
         time:r.time||'', venue:r.venue||'', address:r.address||'',
-        lat:r.lat?parseFloat(r.lat):null, lng:r.lng?parseFloat(r.lng):null,
+        lat:r.lat!=null&&r.lat!==''&&!isNaN(parseFloat(r.lat))?parseFloat(r.lat):null,
+        lng:r.lng!=null&&r.lng!==''&&!isNaN(parseFloat(r.lng))?parseFloat(r.lng):null,
         price:r.price!=null&&r.price!==''?Number(r.price):null, ticket:r.ticket||'', image:r.image||'',
         type:'concert',
       }));
