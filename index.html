@@ -953,14 +953,19 @@ function renderStats(){
       <button class="stats-year-btn${activeYear==='map'?' active':''}" onclick="switchStatsYear('map')">🗺️</button>
     </div>
     <div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>
-${activeYear!=='map'?`
-    <div class="stats-seg">
-      ${activeYear==='all'?`<button class="stats-seg-btn${activeSeg==='yearly'?' active':''}" onclick="switchStatsSeg('yearly')">연도별</button>`:''}
-      <button class="stats-seg-btn${activeSeg==='artist'?' active':''}" onclick="switchStatsSeg('artist')">아티스트</button>
-      <button class="stats-seg-btn${activeSeg==='venue'?' active':''}" onclick="switchStatsSeg('venue')">공연장</button>
-      <button class="stats-seg-btn${activeSeg==='spend'?' active':''}" onclick="switchStatsSeg('spend')">지출</button>
-    </div>`:''}
   </div>`;
+
+  if(activeYear!=='map'){
+    const yearlyBtn = activeYear==='all'
+      ? '<button class="stats-seg-btn'+(activeSeg==='yearly'?' active':'')+'" onclick="switchStatsSeg(\'yearly\')">연도별</button>'
+      : '';
+    html += '<div class="stats-seg">'
+      + yearlyBtn
+      + '<button class="stats-seg-btn'+(activeSeg==='artist'?' active':'')+'" onclick="switchStatsSeg(\'artist\')">아티스트</button>'
+      + '<button class="stats-seg-btn'+(activeSeg==='venue'?' active':'')+'" onclick="switchStatsSeg(\'venue\')">공연장</button>'
+      + '<button class="stats-seg-btn'+(activeSeg==='spend'?' active':'')+'" onclick="switchStatsSeg(\'spend\')">지출</button>'
+      + '</div>';
+  }
 
   if(activeYear==='map'){
     const withAddr=past.filter(e=>e.address);
