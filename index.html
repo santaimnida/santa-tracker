@@ -999,11 +999,11 @@ function renderStats(){
       html+=`<div class="stats-list">
         <div class="stats-row">
           <div class="stats-name">총 지출</div>
-          <div class="stats-count" style="font-size:14px">${fmtKRW(totalSpend)}</div>
+          <div class="stats-count" style="width:auto;font-size:13px;font-variant-numeric:tabular-nums">${fmtKRW(totalSpend)}</div>
         </div>
         <div class="stats-row">
           <div class="stats-name">평균 티켓값</div>
-          <div class="stats-count">${fmtKRW(avgPrice)}</div>
+          <div class="stats-count" style="width:auto;font-variant-numeric:tabular-nums">${fmtKRW(avgPrice)}</div>
         </div>
         <div class="stats-row">
           <div class="stats-name">유료 공연</div>
@@ -1014,7 +1014,7 @@ function renderStats(){
           <div class="stats-count">${free.length}회</div>
         </div>
       </div>`;
-      // 티켓처별 — 바 시작점 고정을 위해 flex layout 정리
+      // 티켓처별
       if(paid.length){
         const ticketCounts={};
         const ticketSpend={};
@@ -1031,8 +1031,8 @@ function renderStats(){
           const cnt=ticketCounts[name];
           html+=`<div class="stats-row">
             <div class="stats-name">${name}</div>
-            <div class="stats-bar-wrap" style="flex-shrink:0"><div class="stats-bar" style="width:${pct}%;background:${barColor}"></div></div>
-            <div class="stats-count" style="width:auto;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;font-feature-settings:'tnum'">${fmtKRW(spend)} <span style="color:var(--text3);font-weight:400">·${cnt}회</span></div>
+            <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%;background:${barColor}"></div></div>
+            <div style="flex-shrink:0;width:110px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;color:var(--text);font-weight:600;white-space:nowrap">${fmtKRW(spend)} <span style="color:var(--text3);font-weight:400">·${cnt}회</span></div>
           </div>`;
         });
         html+=`</div>`;
