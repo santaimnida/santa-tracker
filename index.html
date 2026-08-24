@@ -143,7 +143,7 @@
   .stats-total-inline{font-size:12px;color:var(--text3);margin-top:10px;margin-bottom:14px}
 
   /* 아티스트 / 공연장 세그먼트 */
-  .stats-seg{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin:14px 0 0}
+  .stats-seg{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin:14px 0 0;width:100%}
   .stats-seg-btn{
     flex:1;height:28px;border:none;border-radius:8px;
     font-size:12px;font-weight:500;font-family:var(--font);
@@ -948,7 +948,7 @@ function renderStats(){
     <div class="stats-year-tabs">
       <button class="stats-year-btn${activeYear==='all'?' active':''}" onclick="switchStatsYear('all')">전체</button>
       <select class="stats-year-select${activeYear!=='all'&&activeYear!=='map'?' active':''}" onchange="switchStatsYear(this.value)" style="color:${activeYear!=='all'&&activeYear!=='map'?'var(--text)':'var(--text3)'}">
-        <option value="" ${activeYear==='all'||activeYear==='map'?'selected':''} disabled>연도</option>
+        <option value="__none__" ${activeYear==='all'||activeYear==='map'?'selected':''} disabled>연도</option>
         ${yearSelectOptions}
       </select>
       <button class="stats-year-btn${activeYear==='map'?' active':''}" onclick="switchStatsYear('map')">🗺️</button>
@@ -959,7 +959,7 @@ function renderStats(){
     const yearlyBtn = activeYear==='all'
       ? '<button class="stats-seg-btn'+(activeSeg==='yearly'?' active':'')+'" onclick="switchStatsSeg(\'yearly\')">연도별</button>'
       : '';
-    html += '<div class="stats-seg" style="margin:0 20px 14px">'
+    html += '<div class="stats-seg">'
       + yearlyBtn
       + '<button class="stats-seg-btn'+(activeSeg==='artist'?' active':'')+'" onclick="switchStatsSeg(\'artist\')">아티스트</button>'
       + '<button class="stats-seg-btn'+(activeSeg==='venue'?' active':'')+'" onclick="switchStatsSeg(\'venue\')">공연장</button>'
@@ -1174,7 +1174,7 @@ function initStatsMap(events){
 }
 
 function switchStatsYear(y){
-  if(!y) return;
+  if(!y||y===''||y==='__none__') return;
   window._statsYear=y;
   if(y!=='all'&&y!=='map'&&window._statsSeg==='yearly') window._statsSeg='artist';
   renderStats();
