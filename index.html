@@ -1132,15 +1132,22 @@ function initStatsMap(events){
   if(!canvas) return;
   const ctx=canvas.getContext('2d');
   const W=308, H=360;
-  const BG='#fff', LAND='#e0e0e0';
-  const DOT_R=2.2; // 항상 고정
-  const MARKER_R=5.5; // 항상 고정
-  const BASE_STEP=6; // zoom=1 일 때 화면 픽셀 간격
+  const BG='#fff', LAND='#d8d8d8';
+  const DOT_R=3.2;   // 도트 반지름 (항상 고정)
+  const MARKER_R=4.5; // 마커 반지름 (항상 고정, DOT_R보다 약간 크게)
+  const SCREEN_STEP=9; // 화면 픽셀 간격 (항상 고정)
   let zoom=1, panX=0, panY=0;
 
-  const minLat=30,maxLat=46,minLng=124,maxLng=147;
+  // 범위: 남한+일본 (북한 제외)
+  const minLat=30.5, maxLat=45.5, minLng=124.5, maxLng=146.5;
 
-  const KR_POLY=[[38.6,124.7],[38.9,125.0],[39.6,125.3],[40.2,124.4],[42.0,129.7],[42.4,130.6],[41.6,129.7],[40.4,129.3],[38.6,128.4],[38.2,128.6],[37.7,128.9],[37.2,129.4],[35.7,129.6],[35.0,129.0],[34.6,128.0],[34.3,126.9],[34.5,126.4],[35.1,126.2],[35.7,126.5],[36.5,126.5],[36.8,126.2],[37.8,124.6],[38.6,124.7]];
+  // 남한만 (북한 경계 대략 38선 기준)
+  const KR_POLY=[
+    [38.6,125.0],[38.3,126.5],[38.0,127.5],[37.9,128.0],[37.7,128.9],
+    [37.2,129.4],[35.7,129.6],[35.0,129.0],[34.6,128.0],[34.3,126.9],
+    [34.5,126.4],[35.1,126.2],[35.7,126.5],[36.5,126.5],[36.8,126.2],
+    [37.5,126.0],[38.2,125.3],[38.6,125.0]
+  ];
   const JEJU_POLY=[[33.2,126.1],[33.6,126.1],[33.6,126.9],[33.2,126.9],[33.2,126.1]];
   const ULLEUNG_POLY=[[37.44,130.78],[37.56,130.78],[37.56,130.92],[37.44,130.92],[37.44,130.78]];
   const DOKDO_POLY=[[37.22,131.84],[37.28,131.84],[37.28,131.90],[37.22,131.90],[37.22,131.84]];
@@ -1148,6 +1155,9 @@ function initStatsMap(events){
   const HONSHU_POLY=[[34.0,130.8],[34.4,131.8],[35.1,132.5],[35.5,133.5],[36.0,134.5],[35.6,135.0],[35.0,135.5],[35.0,136.8],[35.5,137.5],[35.0,137.0],[34.8,137.3],[35.2,138.0],[35.4,139.5],[35.7,140.3],[35.4,140.9],[35.1,140.9],[34.9,140.1],[35.0,139.8],[35.5,139.8],[35.7,139.8],[36.1,140.5],[36.5,140.8],[37.5,140.9],[38.5,141.5],[39.7,141.8],[40.6,141.5],[41.3,141.4],[41.5,140.5],[40.5,140.0],[39.0,139.5],[37.5,138.5],[37.0,136.8],[36.5,136.0],[36.0,135.5],[35.7,135.0],[35.9,134.0],[35.5,132.5],[35.0,131.5],[34.3,131.0],[34.0,130.8]];
   const KYUSHU_POLY=[[33.2,130.2],[33.6,131.0],[32.8,131.5],[32.2,131.0],[31.6,130.5],[31.8,129.8],[32.5,130.0],[33.2,130.2]];
   const SHIKOKU_POLY=[[33.5,132.5],[33.2,133.5],[33.3,134.5],[34.0,134.8],[34.2,133.5],[34.0,132.8],[33.5,132.5]];
+  // 오키나와
+  const OKINAWA_POLY=[[26.0,127.5],[26.9,128.3],[26.4,127.8],[26.0,127.5]];
+  const AMAMI_POLY=[[28.2,129.3],[28.6,129.5],[28.4,129.6],[28.1,129.4],[28.2,129.3]];
 
   function polyContains(poly,lat,lng){
     let inside=false;
@@ -1161,29 +1171,28 @@ function initStatsMap(events){
     return polyContains(KR_POLY,lat,lng)||polyContains(JEJU_POLY,lat,lng)||
       polyContains(ULLEUNG_POLY,lat,lng)||polyContains(DOKDO_POLY,lat,lng)||
       polyContains(HOKKAIDO_POLY,lat,lng)||polyContains(HONSHU_POLY,lat,lng)||
-      polyContains(KYUSHU_POLY,lat,lng)||polyContains(SHIKOKU_POLY,lat,lng);
+      polyContains(KYUSHU_POLY,lat,lng)||polyContains(SHIKOKU_POLY,lat,lng)||
+      polyContains(OKINAWA_POLY,lat,lng)||polyContains(AMAMI_POLY,lat,lng);
   }
 
   const yc={2023:'#ffefa6',2024:'#F8D4FC',2025:'#d4e89a',2026:'#a8d1f0',2027:'#ffb9c6'};
 
-  // 위경도 → 캔버스 기준 좌표 (zoom=1, pan=0 기준)
   function baseXY(lat,lng){
     return{
-      x:(lng-minLng)/(maxLng-minLng)*(W-20)+10,
-      y:(maxLat-lat)/(maxLat-minLat)*(H-20)+10
+      x:(lng-minLng)/(maxLng-minLng)*(W-24)+12,
+      y:(maxLat-lat)/(maxLat-minLat)*(H-24)+12
     };
   }
-  // 실제 화면 좌표
   function toXY(lat,lng){
     const b=baseXY(lat,lng);
     return{x:b.x*zoom+panX, y:b.y*zoom+panY};
   }
 
-  // 공연장 그룹화 (셀 기준)
+  // 공연장 그룹화
   const validEvents=events.filter(m=>m.lat!=null&&m.lng!=null);
   function getCell(lat,lng){
-    const ci=Math.round((lng-minLng)/(maxLng-minLng)*120);
-    const ri=Math.round((maxLat-lat)/(maxLat-minLat)*100);
+    const ci=Math.round((lng-minLng)/(maxLng-minLng)*140);
+    const ri=Math.round((maxLat-lat)/(maxLat-minLat)*110);
     return ci+'_'+ri;
   }
   const cellMap={};
@@ -1193,21 +1202,34 @@ function initStatsMap(events){
     cellMap[cell].years.add(new Date(m.date).getFullYear());
   });
 
-  function drawPieCircle(cx,cy,years,r){
+  // 마커 위치 (화면 좌표)를 미리 계산
+  function getMarkerPositions(){
+    const positions=[];
+    Object.values(cellMap).forEach(data=>{
+      const m=data.latest;
+      const{x,y}=toXY(m.lat,m.lng);
+      positions.push({x,y,data});
+    });
+    return positions;
+  }
+
+  // 파이 마커 — 도트 위에 그려지도록 크기 고정
+  function drawPieCircle(cx,cy,years){
     const arr=[...years];
+    const r=MARKER_R;
     const slice=(Math.PI*2)/arr.length;
     arr.forEach((yr,i)=>{
       ctx.beginPath();
       ctx.moveTo(cx,cy);
       ctx.arc(cx,cy,r,i*slice-Math.PI/2,(i+1)*slice-Math.PI/2);
       ctx.closePath();
-      ctx.fillStyle=yc[yr]||'#bbb';
+      ctx.fillStyle=yc[yr]||'#999';
       ctx.fill();
     });
     ctx.beginPath();
     ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.strokeStyle='rgba(0,0,0,0.2)';
-    ctx.lineWidth=0.8;
+    ctx.strokeStyle='rgba(0,0,0,0.15)';
+    ctx.lineWidth=0.6;
     ctx.stroke();
   }
 
@@ -1216,20 +1238,26 @@ function initStatsMap(events){
     ctx.fillStyle=BG;
     ctx.fillRect(0,0,W,H);
 
-    // 화면 픽셀 간격은 항상 BASE_STEP 고정
-    // zoom하면 격자가 촘촘해짐 → 더 세밀한 위경도 샘플링
-    const screenStep=BASE_STEP; // 화면에서 항상 6px 간격
+    const markers=getMarkerPositions();
 
-    // 화면 좌측상단 ~ 우측하단을 screenStep 간격으로 순회
-    for(let px=0;px<W;px+=screenStep){
-      for(let py=0;py<H;py+=screenStep){
-        // 역변환: 화면 좌표 → 위경도
+    // 도트 그리기
+    for(let px=12;px<W-12;px+=SCREEN_STEP){
+      for(let py=12;py<H-12;py+=SCREEN_STEP){
+        // 역변환: 화면 → 위경도
         const bx=(px-panX)/zoom;
         const by=(py-panY)/zoom;
-        const lng=minLng+(bx-10)/(W-20)*(maxLng-minLng);
-        const lat=maxLat-(by-10)/(H-20)*(maxLat-minLat);
+        const lng=minLng+(bx-12)/(W-24)*(maxLng-minLng);
+        const lat=maxLat-(by-12)/(H-24)*(maxLat-minLat);
         if(lat<minLat||lat>maxLat||lng<minLng||lng>maxLng) continue;
         if(!isLand(lat,lng)) continue;
+
+        // 마커 위치와 겹치면 도트 안 그림
+        let isMarker=false;
+        for(const mp of markers){
+          if(Math.hypot(px-mp.x,py-mp.y)<SCREEN_STEP*0.6){isMarker=true;break;}
+        }
+        if(isMarker) continue;
+
         ctx.fillStyle=LAND;
         ctx.beginPath();
         ctx.arc(px,py,DOT_R,0,Math.PI*2);
@@ -1237,30 +1265,28 @@ function initStatsMap(events){
       }
     }
 
-    // 마커
-    Object.values(cellMap).forEach(data=>{
-      const m=data.latest;
-      const{x,y}=toXY(m.lat,m.lng);
-      if(x<-MARKER_R||x>W+MARKER_R||y<-MARKER_R||y>H+MARKER_R) return;
-      drawPieCircle(x,y,data.years,MARKER_R);
+    // 마커 그리기 (도트 위)
+    markers.forEach(mp=>{
+      if(mp.x<-MARKER_R||mp.x>W+MARKER_R||mp.y<-MARKER_R||mp.y>H+MARKER_R) return;
+      drawPieCircle(mp.x,mp.y,mp.data.years);
     });
   }
 
   redraw();
 
-  // 줌
+  // 줌 (화면 중앙 기준)
   const zi=document.getElementById('mapZoomIn');
   const zo=document.getElementById('mapZoomOut');
   if(zi) zi.onclick=()=>{
-    const cx=W/2, cy=H/2;
+    const cx=W/2,cy=H/2;
     panX=(panX-cx)*1.5+cx; panY=(panY-cy)*1.5+cy;
     zoom=Math.min(6,zoom*1.5); redraw();
   };
   if(zo) zo.onclick=()=>{
-    const cx=W/2, cy=H/2;
+    const cx=W/2,cy=H/2;
     panX=(panX-cx)/1.5+cx; panY=(panY-cy)/1.5+cy;
     zoom=Math.max(1,zoom/1.5);
-    if(zoom===1){panX=0;panY=0;}
+    if(zoom<=1){zoom=1;panX=0;panY=0;}
     redraw();
   };
 
@@ -1296,11 +1322,9 @@ function initStatsMap(events){
     const mx=(e.clientX-rect.left)*sc;
     const my=(e.clientY-rect.top)*sc;
     let hit=null,hitDist=Infinity,hitX=0,hitY=0;
-    Object.values(cellMap).forEach(data=>{
-      const m=data.latest;
-      const{x,y}=toXY(m.lat,m.lng);
-      const d=Math.hypot(mx-x,my-y);
-      if(d<18&&d<hitDist){hit=data;hitDist=d;hitX=x;hitY=y;}
+    getMarkerPositions().forEach(mp=>{
+      const d=Math.hypot(mx-mp.x,my-mp.y);
+      if(d<16&&d<hitDist){hit=mp.data;hitDist=d;hitX=mp.x;hitY=mp.y;}
     });
     if(hit){
       const m=hit.latest;
