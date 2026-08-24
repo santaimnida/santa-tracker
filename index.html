@@ -523,8 +523,8 @@
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">주소 (지도용, 선택)</div>
-      <input class="form-input" id="fAddress" placeholder="서울특별시 마포구 ..." autocomplete="off"/>
+      <div class="form-label">구글맵 링크 (선택)</div>
+      <input class="form-input" id="fAddress" placeholder="구글맵 링크 붙여넣기" autocomplete="off"/>
     </div>
     <div class="form-row-half">
       <div class="form-row">
@@ -585,8 +585,8 @@
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">주소 (지도용, 선택)</div>
-      <input class="form-input" id="eAddress" placeholder="서울특별시 마포구 ..." autocomplete="off"/>
+      <div class="form-label">구글맵 링크 (선택)</div>
+      <input class="form-input" id="eAddress" placeholder="구글맵 링크 붙여넣기" autocomplete="off"/>
     </div>
     <div class="form-row-half">
       <div class="form-row">
@@ -1124,6 +1124,21 @@ function renderMapTab(){
   setTimeout(()=>initStatsMap(withAddr), 50);
 }
 
+/* ── Google Maps URL → coordinates ── */
+function extractCoordsFromGmaps(url){
+  if(!url) return null;
+  // @lat,lng,zoom 형식
+  let m = url.match(/@(-?[\d.]+),(-?[\d.]+)/);
+  if(m) return {lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+  // q=lat,lng 형식
+  m = url.match(/[?&]q=(-?[\d.]+),(-?[\d.]+)/);
+  if(m) return {lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+  // ll=lat,lng 형식
+  m = url.match(/[?&]ll=(-?[\d.]+),(-?[\d.]+)/);
+  if(m) return {lat:parseFloat(m[1]),lng:parseFloat(m[2])};
+  return null;
+}
+
 function initStatsMap(events){
   const mapEl=document.getElementById('mapTabEl')||document.getElementById('statsMap');
   if(!mapEl) return;
@@ -1138,67 +1153,25 @@ function initStatsMap(events){
   }).addTo(map);
 
   const yearColors={'2023':'#ffefa6','2024':'#F8D4FC','2025':'#d4e89a','2026':'#a8d1f0','2027':'#ffb9c6'};
-  if(!window._geocodeCache) window._geocodeCache={};
-
-  // 주소별로 그룹화 (중복 제거)
-  const addrMap={};
-  events.forEach(e=>{
-    if(!e.address) return;
-    if(!addrMap[e.address]) addrMap[e.address]=[];
-    addrMap[e.address].push(e);
-  });
-
-  const addrList=Object.keys(addrMap);
   const bounds=[];
 
-  function addMarker(addr, lat, lng){
-    const evList=addrMap[addr];
-    const year=new Date(evList[0].date).getFullYear();
+  events.forEach(e=>{
+    if(!e.address) return;
+    const coords=extractCoordsFromGmaps(e.address);
+    if(!coords) return;
+    const year=new Date(e.date).getFullYear();
     const color=yearColors[year]||'#a8d1f0';
     const icon=L.divIcon({
       html:`<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid rgba(0,0,0,0.25);box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div>`,
       className:'',iconSize:[12,12],iconAnchor:[6,6]
     });
-    const popupHtml=evList.map(e=>`<b>${e.venue||addr}</b><br>${e.artist} · ${e.date}`).join('<hr style="margin:4px 0">');
-    L.marker([lat,lng],{icon}).addTo(map).bindPopup(popupHtml);
-    bounds.push([lat,lng]);
-    if(bounds.length===addrList.length) map.fitBounds(bounds,{padding:[30,30]});
-  }
-
-  // 캐시된 것 먼저 즉시 표시
-  const toFetch=[];
-  addrList.forEach(addr=>{
-    if(window._geocodeCache[addr]){
-      const {lat,lng}=window._geocodeCache[addr];
-      addMarker(addr,lat,lng);
-    } else {
-      toFetch.push(addr);
-    }
+    const popup=`<b>${e.venue||'공연장'}</b><br>${e.artist} · ${e.date}`;
+    L.marker([coords.lat,coords.lng],{icon}).addTo(map).bindPopup(popup);
+    bounds.push([coords.lat,coords.lng]);
   });
 
-  if(!toFetch.length){
-    if(bounds.length) map.fitBounds(bounds,{padding:[30,30]});
-    return;
-  }
-
-  // 캐시 없는 것만 순차 요청
-  let idx=0;
-  async function fetchNext(){
-    if(idx>=toFetch.length) return;
-    const addr=toFetch[idx++];
-    try{
-      const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`,{headers:{'Accept-Language':'ko'}});
-      const data=await res.json();
-      if(data&&data[0]){
-        const lat=parseFloat(data[0].lat);
-        const lng=parseFloat(data[0].lon);
-        window._geocodeCache[addr]={lat,lng};
-        addMarker(addr,lat,lng);
-      }
-    }catch(err){}
-    setTimeout(fetchNext,1100);
-  }
-  fetchNext();
+  if(bounds.length) map.fitBounds(bounds,{padding:[30,30]});
+  else map.setView([36.5,127.5],7); // 한국 중심
 }
 
 function switchStatsYear(y){
