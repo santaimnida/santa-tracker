@@ -329,7 +329,7 @@
     border-radius:0;cursor:pointer;height:28px;width:76px;flex-shrink:0;
     font-family:var(--font);
   }
-  .nav-label-text{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px;white-space:nowrap}
+  .nav-label-text{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px;white-space:nowrap;font-family:'SF Mono','Fira Code','Fira Mono','Roboto Mono',monospace}
   .nav-chevron{display:none!important}
   .nav-arrows{display:flex;gap:4px}
   .nav-arr{
@@ -341,7 +341,8 @@
   .nav-arr:active{opacity:0.5}
 
   .cal-dd{
-    position:absolute;top:52px;left:20px;right:20px;
+    position:absolute;top:44px;left:0;
+    width:auto;min-width:160px;
     background:var(--surface);border:0.5px solid var(--border-strong);
     border-radius:14px;padding:14px;z-index:50;
     box-shadow:0 4px 20px rgba(0,0,0,.1);display:none;
@@ -349,7 +350,7 @@
   .cal-dd.open{display:block}
   .dd-sec{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
   .dd-years{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-  .dd-months{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .dd-months{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;min-width:220px}
   .dd-btn{
     height:30px;border:0.5px solid var(--border-strong);border-radius:8px;
     background:none;font-size:12px;font-weight:500;font-family:var(--font);
@@ -358,7 +359,7 @@
     transition:all .12s;
   }
   .dd-btn.year{min-width:52px}
-  .dd-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .dd-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border-strong)}
   .dd-btn:active{opacity:0.6}
 
   .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;margin-bottom:4px}
@@ -446,15 +447,15 @@
     <div class="form-row-half">
       <div class="form-row">
         <div class="form-label">날짜</div>
-        <input class="form-input" id="fDate" type="date"/>
+        <input class="form-input" id="fDate" type="date" oninput="autoDate(this)"/>
       </div>
       <div class="form-row">
-        <div class="form-label">시간 (선택)</div>
+        <div class="form-label">시간</div>
         <input class="form-input" id="fTime" type="text" placeholder="18:00" maxlength="5" inputmode="numeric" oninput="autoTime(this)"/>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">장소 (선택)</div>
+      <div class="form-label">장소</div>
       <div class="ac-wrap">
         <input class="form-input" id="fVenue" placeholder="공연장 이름" oninput="showAc('fVenue','fVenueDrop','venue')" onfocus="showAc('fVenue','fVenueDrop','venue')" onblur="hideAc('fVenueDrop')" autocomplete="off"/>
         <div class="ac-dropdown" id="fVenueDrop"></div>
@@ -462,19 +463,19 @@
     </div>
     <div class="form-row-half">
       <div class="form-row">
-        <div class="form-label">티켓값 (선택)</div>
+        <div class="form-label">티켓값</div>
         <input class="form-input" id="fPrice" type="text" placeholder="55000" inputmode="numeric"/>
       </div>
       <div class="form-row">
-        <div class="form-label">티켓처 (선택)</div>
+        <div class="form-label">티켓처</div>
         <div class="ac-wrap">
-          <input class="form-input" id="fTicket" placeholder="인터파크" oninput="showAc('fTicket','fTicketDrop','ticket')" onfocus="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
+          <input class="form-input" id="fTicket" placeholder="" oninput="showAc('fTicket','fTicketDrop','ticket')" onfocus="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
           <div class="ac-dropdown" id="fTicketDrop"></div>
         </div>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">포스터 URL (선택)</div>
+      <div class="form-label">포스터 URL</div>
       <input class="form-input" id="fImage" placeholder="https://..." autocomplete="off"/>
     </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
@@ -499,15 +500,15 @@
     <div class="form-row-half">
       <div class="form-row">
         <div class="form-label">날짜</div>
-        <input class="form-input" id="eDate" type="date"/>
+        <input class="form-input" id="eDate" type="date" oninput="autoDate(this)"/>
       </div>
       <div class="form-row">
-        <div class="form-label">시간 (선택)</div>
+        <div class="form-label">시간</div>
         <input class="form-input" id="eTime" type="text" placeholder="18:00" maxlength="5" inputmode="numeric" oninput="autoTime(this)"/>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">장소 (선택)</div>
+      <div class="form-label">장소</div>
       <div class="ac-wrap">
         <input class="form-input" id="eVenue" placeholder="공연장 이름" oninput="showAc('eVenue','eVenueDrop','venue')" onfocus="showAc('eVenue','eVenueDrop','venue')" onblur="hideAc('eVenueDrop')" autocomplete="off"/>
         <div class="ac-dropdown" id="eVenueDrop"></div>
@@ -515,19 +516,19 @@
     </div>
     <div class="form-row-half">
       <div class="form-row">
-        <div class="form-label">티켓값 (선택)</div>
+        <div class="form-label">티켓값</div>
         <input class="form-input" id="ePrice" type="text" placeholder="55000" inputmode="numeric"/>
       </div>
       <div class="form-row">
-        <div class="form-label">티켓처 (선택)</div>
+        <div class="form-label">티켓처</div>
         <div class="ac-wrap">
-          <input class="form-input" id="eTicket" placeholder="인터파크" oninput="showAc('eTicket','eTicketDrop','ticket')" onfocus="showAc('eTicket','eTicketDrop','ticket')" onblur="hideAc('eTicketDrop')" autocomplete="off"/>
+          <input class="form-input" id="eTicket" placeholder="" oninput="showAc('eTicket','eTicketDrop','ticket')" onfocus="showAc('eTicket','eTicketDrop','ticket')" onblur="hideAc('eTicketDrop')" autocomplete="off"/>
           <div class="ac-dropdown" id="eTicketDrop"></div>
         </div>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">포스터 URL (선택)</div>
+      <div class="form-label">포스터 URL</div>
       <input class="form-input" id="eImage" placeholder="https://..." autocomplete="off"/>
     </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
@@ -667,12 +668,7 @@ function renderCard(e){
     </svg>${e.venue}</span>`:'';
 
   const year = new Date(e.date).getFullYear();
-  const barColor = year === 2023 ? '#ffefa6'
-                 : year === 2024 ? '#F8D4FC'
-                 : year === 2025 ? '#d4e89a'
-                 : year === 2026 ? '#a8d1f0'
-                 : year === 2027 ? '#ffb9c6'
-                 : '#a48f7b';
+    const barColor = getYearColor(year);
 
   return `<div class="card-wrap" id="wrap_${e.id}">
     <div class="event-card" onclick="openDetail('${e.id}')">
@@ -691,147 +687,117 @@ function renderCard(e){
 }
 
 /* ── archive render: year → month grid → concert list ── */
-/* ── calendar state ── */
-let _calYear=null, _calMonth=null;
+/* ── annual calendar ── */
+let _calYear = new Date().getFullYear();
 
 function renderArchive(){
-  const past=allEvents;
-  // default to most recent month with events
-  if(!_calYear || !_calMonth){
-    if(past.length){
-      const now = new Date();
-_calYear = now.getFullYear();
-_calMonth = now.getMonth() + 1;
-    } else {
-      const now=new Date(); _calYear=now.getFullYear(); _calMonth=now.getMonth()+1;
-    }
-  }
-  renderCalendar(past);
-}
+  const el = document.getElementById('mainContent');
+  const years = [...new Set(allEvents.map(e=>new Date(e.date).getFullYear()))].sort((a,b)=>b-a);
+  if(!years.length){ el.innerHTML=`<div class="empty"><div class="empty-icon">🎞️</div><div class="empty-t">공연이 없어요</div></div>`; return; }
+  if(!years.includes(_calYear)) _calYear = years[0];
 
-function renderCalendar(past){
-  const el=document.getElementById('mainContent');
-  if(!past) past = allEvents;
-
-  // build event map by date
-  const byDate={};
-  past.forEach(e=>{
-    const d=new Date(e.date);
-    const y=d.getFullYear(), m=d.getMonth()+1, day=d.getDate();
-    if(y===_calYear && m===_calMonth){
-      if(!byDate[day]) byDate[day]=[];
-      byDate[day].push(e);
-    }
+  const evMap = {};
+  allEvents.filter(e=>new Date(e.date).getFullYear()===_calYear).forEach(e=>{
+    const d = new Date(e.date);
+    const key = `${d.getMonth()+1}_${d.getDate()}`;
+    if(!evMap[key]) evMap[key] = e;
   });
 
-  // available years from past events
-  const years=[...new Set(past.map(e=>new Date(e.date).getFullYear()))].sort((a,b)=>a-b);
-  if(!years.length) years.push(new Date().getFullYear());
+  const MONTHS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  const DOWS_SHORT = ['M','T','W','T','F','S','S'];
 
-  const firstDay=new Date(_calYear,_calMonth-1,1).getDay();
-  const daysInMonth=new Date(_calYear,_calMonth,0).getDate();
+  function daysInMonth(m){ return new Date(_calYear,m,0).getDate(); }
+  function firstDow(m){ const d=new Date(_calYear,m-1,1).getDay(); return d===0?6:d-1; }
 
-  let html=`<div class="cal-wrap">
-    <div class="cal-nav">
-      <button class="nav-label-btn" onclick="toggleCalDd()">
-        <span class="nav-label-text" id="calLabel">${_calYear}년 ${_calMonth}월</span>
-        <span class="nav-chevron" id="calChevron">▾</span>
-      </button>
-      <div class="nav-arrows">
-        <button class="nav-arr" onclick="moveCalMonth(-1)">‹</button>
-        <button class="nav-arr" onclick="moveCalMonth(1)">›</button>
-      </div>
-    </div>
+  const fds = Array.from({length:12},(_,i)=>firstDow(i+1));
+  const dims = Array.from({length:12},(_,i)=>daysInMonth(i+1));
+  const maxRows = Math.max(...Array.from({length:12},(_,i)=>fds[i]+dims[i]));
 
-    <div class="cal-dd" id="calDd">
-      <div class="dd-sec">년도</div>
-      <div class="dd-years">
-        ${years.map(y=>`<button class="dd-btn year${y===_calYear?' active':''}" onclick="selCalYear(${y})">${y}</button>`).join('')}
-      </div>
-      <div class="dd-sec">월</div>
-      <div class="dd-months">
-        ${Array.from({length:12},(_,i)=>`<button class="dd-btn${i+1===_calMonth?' active':''}" onclick="selCalMonth(${i+1})">${i+1}월</button>`).join('')}
-      </div>
-    </div>
+  const MONO = "font-family:'SF Mono',ui-monospace,monospace";
 
-    <div class="cal-dow">
-      <div class="cal-dow-cell">일</div><div class="cal-dow-cell">월</div><div class="cal-dow-cell">화</div>
-      <div class="cal-dow-cell">수</div><div class="cal-dow-cell">목</div><div class="cal-dow-cell">금</div>
-      <div class="cal-dow-cell">토</div>
-    </div>
-    <div class="cal-grid">`;
+  // 핵심: 각 행의 요일은 그 행에 날짜가 있는 어느 달이든 동일해야 함
+  // 각 달의 1일 요일이 다르므로, row별로 실제 요일 계산
+  // row에 해당하는 날짜들의 요일은 모두 같아야 정상
+  // 요일 = (fds[mi] + (row - fds[mi])) % 7 = row % 7... 이 아님
+  // 실제로 날짜 d가 있을 때 요일 = (fds[mi] + d - 1) % 7
 
-  for(let i=0;i<firstDay;i++) html+=`<div class="cal-empty"></div>`;
+  let html = `<table style="border-collapse:collapse;table-layout:fixed;width:100%">`;
+  // 열 너비: DOW 14px + 12열이 나머지 균등
+  html += `<colgroup><col style="width:14px">`;
+  for(let i=0;i<12;i++) html += `<col>`;
+  html += `</colgroup>`;
 
-  for(let d=1;d<=daysInMonth;d++){
-    const evs = (byDate[d] || []).sort((a,b)=>
-    (a.time || "99:99").localeCompare(b.time || "99:99")
-);
+  // 헤더
+  html += `<thead><tr><th></th>`;
+  MONTHS.forEach((m,i)=>{
+    html += `<th style="height:18px;text-align:center;vertical-align:bottom;font-size:9px;font-weight:500;color:var(--text3);padding:0 0 3px;${i<11?'border-right:0.5px solid var(--border)':''}">${m}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
 
-if(evs.length >= 2 && evs[0].image && evs[1].image){
+  for(let row=0; row<maxRows; row++){
+    // 이 행의 요일: 첫 번째로 날짜가 있는 달 기준
+    let dowLabel = '';
+    for(let mi=0;mi<12;mi++){
+      const day = row - fds[mi] + 1;
+      if(day>=1 && day<=dims[mi]){
+        const dow = (fds[mi] + day - 1) % 7;
+        dowLabel = DOWS_SHORT[dow];
+        break;
+      }
+    }
 
-  html += `
-  <div class="cal-cell">
-    <div class="cal-stack">
-      <div onclick="openDetail('${evs[0].id}')">
-        <img src="${toImgUrl(evs[0].image)}">
-      </div>
-      <div onclick="openDetail('${evs[1].id}')">
-        <img src="${toImgUrl(evs[1].image)}">
-      </div>
-    </div>
-  </div>`;
+    html += `<tr>`;
+    html += `<td style="width:14px;height:15px;text-align:right;padding-right:2px;font-size:6.5px;color:var(--text3);${MONO};vertical-align:middle;white-space:nowrap">${dowLabel}</td>`;
 
-}else if(evs.length){
+    for(let mi=0; mi<12; mi++){
+      const day = row - fds[mi] + 1;
+      const sep = mi<11 ? 'border-right:0.5px solid var(--border);' : '';
+      const base = `height:15px;padding:0;text-align:center;vertical-align:middle;${sep}`;
 
-  const e = evs[0];
+      if(day<1 || day>dims[mi]){
+        html += `<td style="${base}"></td>`;
+        continue;
+      }
 
-  if(e.image){
-    html += `
-    <div class="cal-cell" onclick="openDetail('${e.id}')">
-      <img src="${toImgUrl(e.image)}">
-    </div>`;
-  }else{
-    html += `
-    <div class="cal-cell" onclick="openDetail('${e.id}')">
-      <span class="cal-num has">${d}</span>
-    </div>`;
+      const key = `${mi+1}_${day}`;
+      const ev = evMap[key];
+
+      if(ev){
+        const col = getYearColorStr(new Date(ev.date).getFullYear());
+        const img = ev.image ? toImgUrl(ev.image) : null;
+        if(img){
+          html += `<td style="${base}"><div onclick="openDetail('${ev.id}')" style="width:13px;height:13px;border-radius:50%;overflow:hidden;cursor:pointer;display:inline-block;margin:auto"><img src="${img}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/></div></td>`;
+        } else {
+          html += `<td style="${base}"><div onclick="openDetail('${ev.id}')" style="width:13px;height:13px;border-radius:50%;background:${col};display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><span style="font-size:5.5px;font-weight:500;color:rgba(0,0,0,0.5);${MONO}">${day}</span></div></td>`;
+        }
+      } else {
+        html += `<td style="${base}"><span style="font-size:8px;color:var(--text3);${MONO}">${day}</span></td>`;
+      }
+    }
+    html += `</tr>`;
   }
+  html += `</tbody></table>`;
 
-}else{
+  const yearBtns = years.map(y=>
+    `<button onclick="setCalYear(${y})" style="background:${y===_calYear?'var(--surface2)':'none'};border:none;${MONO};font-size:12px;font-weight:600;cursor:pointer;padding:2px 8px;border-radius:4px;color:${y===_calYear?'var(--text)':'var(--text3)'}">${y}</button>`
+  ).join('');
 
-  html += `
-  <div class="cal-cell" style="cursor:default">
-    <span class="cal-num none">${d}</span>
-  </div>`;
-}
-  }
-
-  html+=`</div></div>`;
-  el.innerHTML=html;
+  el.innerHTML = `
+    <div style="padding:10px 20px 6px;display:flex;gap:4px;flex-wrap:wrap">${yearBtns}</div>
+    <div style="padding:0 20px 20px">${html}</div>`;
 }
 
-function toggleCalDd(){
-  const dd=document.getElementById('calDd');
-  const ch=document.getElementById('calChevron');
-  if(!dd||!ch) return;
-  const open=dd.classList.toggle('open');
-  ch.style.transform=open?'rotate(180deg)':'';
+
+function getYearColorStr(yr){
+  const map={2027:'#ffb9c6',2026:'#a8d1f0',2025:'#d4e89a',2024:'#F8D4FC',2023:'#ffefa6',
+    2022:'#D8E2DC',2021:'#FEC5BB',2020:'#DEDAF4',2019:'#FFDCA9',2018:'#D8F2C9',
+    2017:'#FAE1DD',2016:'#EDF7CB',2015:'#DED6CE',2014:'#FFD2CF',2013:'#E8B0C8'};
+  return map[parseInt(yr)]||'#e0e0e0';
 }
-function selCalYear(y){ _calYear=y; renderCalendar(); }
-function selCalMonth(m){
-  _calMonth=m;
-  document.getElementById('calDd')?.classList.remove('open');
-  const ch=document.getElementById('calChevron');
-  if(ch) ch.style.transform='';
-  renderCalendar();
-}
-function moveCalMonth(d){
-  _calMonth+=d;
-  if(_calMonth>12){_calMonth=1;_calYear++;}
-  if(_calMonth<1){_calMonth=12;_calYear--;}
-  renderCalendar();
-}
+
+function setCalYear(y){ _calYear=y; renderArchive(); }
+
+
 function renderStats(){
   const el=document.getElementById('mainContent');
   const past=allEvents.filter(e=>daysUntil(e.date)<0);
@@ -1280,6 +1246,20 @@ function getYearColor(yr){
     2013:'#E8B0C8',
   };
   return map[y]||'#e0e0e0';
+}
+
+/* ── auto date format ── */
+function autoDate(input){
+  let v = input.value.replace(/[^0-9]/g,'');
+  if(v.length === 6){
+    // YYMMDD → 20YY-MM-DD
+    const yy = v.slice(0,2);
+    const mm = v.slice(2,4);
+    const dd = v.slice(4,6);
+    const year = '20' + yy;
+    input.type = 'date';
+    input.value = `${year}-${mm}-${dd}`;
+  }
 }
 
 /* ── auto time format ── */
