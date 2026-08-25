@@ -324,18 +324,17 @@
   .cal-wrap{position:relative}
   .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px}
   .nav-label-btn{
-    display:flex;align-items:center;gap:4px;
-    background:var(--surface2);border:0.5px solid var(--border-strong);
-    border-radius:8px;cursor:pointer;height:28px;padding:0 10px;
+    display:flex;align-items:center;justify-content:center;gap:4px;
+    background:none;border:none;
+    border-radius:0;cursor:pointer;height:28px;width:76px;flex-shrink:0;
     font-family:var(--font);
   }
-  .nav-label-text{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px}
-  .nav-chevron{font-size:11px;color:var(--text3);transition:transform .15s;display:inline-block}
-  .nav-chevron.open{transform:rotate(180deg)}
+  .nav-label-text{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px;white-space:nowrap}
+  .nav-chevron{display:none!important}
   .nav-arrows{display:flex;gap:4px}
   .nav-arr{
-    background:var(--surface2);border:0.5px solid var(--border-strong);
-    border-radius:8px;cursor:pointer;width:28px;height:28px;
+    background:none;border:none;
+    border-radius:50%;cursor:pointer;width:28px;height:28px;
     display:flex;align-items:center;justify-content:center;
     color:var(--text3);font-size:15px;font-family:var(--font);
   }
@@ -369,6 +368,7 @@
     aspect-ratio:1;border-radius:8px;overflow:hidden;
     position:relative;cursor:pointer;
     display:flex;align-items:center;justify-content:center;
+    width:100%;box-sizing:border-box;
   }
   .cal-cell img{
     width:100%;height:100%;object-fit:cover;
@@ -1254,14 +1254,7 @@ function toImgUrl(url){
 }
 
 
-const YEAR_COLORS={2023:'#ffefa6',2024:'#F8D4FC',2025:'#d4e89a',2026:'#a8d1f0',2027:'#ffb9c6'};
-const EXTRA_YEAR_COLORS=['#D8E2DC','#FAE1DD','#FEC5BB','#DED6CE','#FFDCA9','#DEDAF4','#D8F2C9','#FFD2CF','#EDF7CB','#E8B0C8'];
-function getYearColor(yr){
-  const y=parseInt(yr);
-  if(YEAR_COLORS[y]) return YEAR_COLORS[y];
-  const idx=2022-y;
-  return EXTRA_YEAR_COLORS[Math.max(0,Math.min(idx,EXTRA_YEAR_COLORS.length-1))];
-}
+
 
 
 
