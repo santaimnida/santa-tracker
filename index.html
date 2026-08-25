@@ -784,10 +784,10 @@ function renderArchive(){
 
   // 연도 드롭다운
   const yearOpts = years.map(y=>`<option value="${y}"${y===_calYear?' selected':''}>${y}</option>`).join('');
-  const yearSel = `<select onchange="setCalYear(parseInt(this.value))" style="background:none;border:none;${MONO};font-size:13px;font-weight:600;cursor:pointer;color:var(--text);outline:none;padding:0;-webkit-appearance:none;appearance:none">${yearOpts}</select>`;
+  const yearSel = `<select onchange="setCalYear(parseInt(this.value))" style="background:none;border:none;${MONO};font-size:13px;font-weight:600;cursor:pointer;color:var(--text);outline:none;padding:0;margin:0;-webkit-appearance:none;appearance:none">${yearOpts}</select>`;
 
   el.innerHTML = `
-    <div style="padding:10px 20px 6px">${yearSel}</div>
+    <div style="padding:10px 20px 6px;display:flex;align-items:center">${yearSel}</div>
     <div style="padding:0 20px 20px">${html}</div>`;
 }
 
