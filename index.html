@@ -120,20 +120,27 @@
   .stats-header{padding:16px 20px 0}
 
   /* 연도: 밑줄 스타일 */
-  .stats-year-tabs{display:flex;gap:20px;margin-bottom:4px}
+  .stats-year-tabs{display:flex;gap:16px;margin-bottom:4px;align-items:center}
   .stats-year-btn{
     background:none;border:none;padding:0 0 3px;
-    font-size:16px;font-weight:600;font-family:var(--font);
+    font-size:13px;font-weight:600;font-family:var(--font);
     color:var(--text3);cursor:pointer;
     border-bottom:2px solid transparent;
     transition:color 0.12s,border-color 0.12s;
   }
   .stats-year-btn.active{color:var(--text);border-bottom-color:var(--text)}
+  .stats-year-select{
+    background:none;border:none;border-bottom:2px solid transparent;
+    font-size:13px;font-weight:600;font-family:var(--font);
+    color:var(--text3);cursor:pointer;padding:0 0 3px;
+    outline:none;-webkit-appearance:none;appearance:none;
+  }
+  .stats-year-select.active{color:var(--text);border-bottom-color:var(--text)}
 
   .stats-total-inline{font-size:12px;color:var(--text3);margin-top:10px;margin-bottom:14px}
 
   /* 아티스트 / 공연장 세그먼트 */
-  .stats-seg{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin-top:14px}
+  .stats-seg{display:flex;background:var(--surface2);border-radius:10px;padding:2px;margin:14px 20px 0}
   .stats-seg-btn{
     flex:1;height:28px;border:none;border-radius:8px;
     font-size:12px;font-weight:500;font-family:var(--font);
@@ -857,11 +864,13 @@ function renderStats(){
   const vb=activeSeg==='venue'?' active':'';
   const sb=activeSeg==='spend'?' active':'';
 
-  const yearBtns=years.map(y=>`<button class="stats-year-btn${y==activeYear?' active':''}" onclick="switchStatsYear('${y}')">${y}</button>`).join('');
+  const yearOpts=years.map(y=>`<option value="${y}"${y==activeYear?'selected':''}>${y}</option>`).join('');
+  const yearSelActive=activeYear!=='all'?' active':'';
+  const yearSelColor=activeYear!=='all'?'var(--text)':'var(--text3)';
   const yearlyBtn=activeYear==='all'?`<button class="stats-seg-btn${yb}" onclick="switchStatsSeg('yearly')">연도별</button>`:'';
   const segHtml=`<div class="stats-seg">${yearlyBtn}<button class="stats-seg-btn${ab}" onclick="switchStatsSeg('artist')">아티스트</button><button class="stats-seg-btn${vb}" onclick="switchStatsSeg('venue')">공연장</button><button class="stats-seg-btn${sb}" onclick="switchStatsSeg('spend')">지출</button></div>`;
 
-  let html=`<div class="stats-header"><div class="stats-year-tabs"><button class="stats-year-btn${allActive}" onclick="switchStatsYear('all')">전체</button>${yearBtns}</div><div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div></div>${segHtml}`;
+  let html=`<div class="stats-header"><div class="stats-year-tabs"><button class="stats-year-btn${allActive}" onclick="switchStatsYear('all')">전체</button><select class="stats-year-select${yearSelActive}" onchange="switchStatsYear(this.value)" style="color:${yearSelColor}"><option value="" disabled ${activeYear==='all'?'selected':''}>연도</option>${yearOpts}</select></div><div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div></div>${segHtml}`;
 
   if(activeSeg==='artist'){
     const counts={};
@@ -1065,6 +1074,7 @@ function initStatsMap(events){
 }
 
 function switchStatsYear(y){
+  if(!y) return;
   window._statsYear=y;
   if(y==='all') window._statsSeg='yearly';
   else if(window._statsSeg==='yearly') window._statsSeg='artist';
@@ -1243,7 +1253,7 @@ function toImgUrl(url){
   return url;
 }
 
-/* ── year colors ── */
+
 const YEAR_COLORS={2023:'#ffefa6',2024:'#F8D4FC',2025:'#d4e89a',2026:'#a8d1f0',2027:'#ffb9c6'};
 const EXTRA_YEAR_COLORS=['#D8E2DC','#FAE1DD','#FEC5BB','#DED6CE','#FFDCA9','#DEDAF4','#D8F2C9','#FFD2CF','#EDF7CB','#E8B0C8'];
 function getYearColor(yr){
@@ -1254,6 +1264,30 @@ function getYearColor(yr){
 }
 
 
+
+/* ── year colors ── */
+// 연도별 색상 (인접 연도와 겹치지 않게)
+function getYearColor(yr){
+  const y=parseInt(yr);
+  const map={
+    2027:'#ffb9c6',
+    2026:'#a8d1f0',
+    2025:'#d4e89a',
+    2024:'#F8D4FC',
+    2023:'#ffefa6',
+    2022:'#D8E2DC',
+    2021:'#FEC5BB',
+    2020:'#DEDAF4',
+    2019:'#FFDCA9',
+    2018:'#D8F2C9',
+    2017:'#FAE1DD',
+    2016:'#EDF7CB',
+    2015:'#DED6CE',
+    2014:'#FFD2CF',
+    2013:'#E8B0C8',
+  };
+  return map[y]||'#e0e0e0';
+}
 
 /* ── auto time format ── */
 function autoTime(input){
