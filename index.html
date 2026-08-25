@@ -839,37 +839,29 @@ function renderStats(){
     (byYear[y]=byYear[y]||[]).push(e);
   });
   const years=Object.keys(byYear).sort((a,b)=>b-a);
-  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all'&&window._statsYear!=='map')) window._statsYear='all';
+
+  if(!window._statsYear||(!byYear[window._statsYear]&&window._statsYear!=='all')) window._statsYear='all';
   if(!window._statsSeg) window._statsSeg='yearly';
   const activeYear=window._statsYear;
   const activeSeg=window._statsSeg;
-  const evs=activeYear==='all'||activeYear==='map' ? past : (byYear[activeYear]||[]);
-  const barColor=getYearColor(activeYear==='all'||activeYear==='map'?years[0]:activeYear);
+  const evs=activeYear==='all'?past:(byYear[activeYear]||[]);
+  const barColor=getYearColor(activeYear==='all'?years[0]:activeYear);
 
   const uniqueArtists=new Set();
   evs.forEach(e=>e.artist.split(',').map(a=>a.trim()).filter(Boolean).forEach(a=>uniqueArtists.add(a)));
   const uniqueVenues=new Set(evs.filter(e=>e.venue).map(e=>e.venue));
 
-  const yearSelectOptions=years.map(y=>`<option value="${y}"${y==activeYear?'selected':''}>${y}</option>`).join('');
-  let selectActive=activeYear!=='all'&&activeYear!=='map'?' active':'';
-  let selectColor=activeYear!=='all'&&activeYear!=='map'?'var(--text)':'var(--text3)';
-
-  let segHtml='';
-  if(activeYear!=='map'){
-    const yb=activeSeg==='yearly'?' active':'';
-    const ab=activeSeg==='artist'?' active':'';
-    const vb=activeSeg==='venue'?' active':'';
-    const sb=activeSeg==='spend'?' active':'';
-    const yearlyBtn=activeYear==='all'
-      ?`<button class="stats-seg-btn${yb}" onclick="switchStatsSeg('yearly')">연도별</button>`
-      :'';
-    segHtml=`<div class="stats-seg">${yearlyBtn}<button class="stats-seg-btn${ab}" onclick="switchStatsSeg('artist')">아티스트</button><button class="stats-seg-btn${vb}" onclick="switchStatsSeg('venue')">공연장</button><button class="stats-seg-btn${sb}" onclick="switchStatsSeg('spend')">지출</button></div>`;
-  }
-
   const allActive=activeYear==='all'?' active':'';
-  const mapActive=activeYear==='map'?' active':'';
-  const selOpts=`<option value="__none__" ${activeYear==='all'||activeYear==='map'?'selected':''} disabled>연도</option>${yearSelectOptions}`;
-  let html=`<div class="stats-header"><div class="stats-year-tabs"><button class="stats-year-btn${allActive}" onclick="switchStatsYear('all')">전체</button><select class="stats-year-select${selectActive}" onchange="switchStatsYear(this.value)" style="color:${selectColor}">${selOpts}</select><button class="stats-year-btn${mapActive}" onclick="switchStatsYear('map')">🗺️</button></div><div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div>${segHtml}</div>`;
+  const yb=activeSeg==='yearly'?' active':'';
+  const ab=activeSeg==='artist'?' active':'';
+  const vb=activeSeg==='venue'?' active':'';
+  const sb=activeSeg==='spend'?' active':'';
+
+  const yearBtns=years.map(y=>`<button class="stats-year-btn${y==activeYear?' active':''}" onclick="switchStatsYear('${y}')">${y}</button>`).join('');
+  const yearlyBtn=activeYear==='all'?`<button class="stats-seg-btn${yb}" onclick="switchStatsSeg('yearly')">연도별</button>`:'';
+  const segHtml=`<div class="stats-seg">${yearlyBtn}<button class="stats-seg-btn${ab}" onclick="switchStatsSeg('artist')">아티스트</button><button class="stats-seg-btn${vb}" onclick="switchStatsSeg('venue')">공연장</button><button class="stats-seg-btn${sb}" onclick="switchStatsSeg('spend')">지출</button></div>`;
+
+  let html=`<div class="stats-header"><div class="stats-year-tabs"><button class="stats-year-btn${allActive}" onclick="switchStatsYear('all')">전체</button>${yearBtns}</div><div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div></div>${segHtml}`;
 
   if(activeSeg==='artist'){
     const counts={};
@@ -1073,10 +1065,9 @@ function initStatsMap(events){
 }
 
 function switchStatsYear(y){
-  if(!y||y==='__none__') return;
   window._statsYear=y;
   if(y==='all') window._statsSeg='yearly';
-  else if(y!=='map'&&window._statsSeg==='yearly') window._statsSeg='artist';
+  else if(window._statsSeg==='yearly') window._statsSeg='artist';
   renderStats();
 }
 function switchStatsSeg(s){ window._statsSeg=s; renderStats(); }
