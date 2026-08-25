@@ -696,15 +696,17 @@ function renderArchive(){
   if(!years.length){ el.innerHTML=`<div class="empty"><div class="empty-icon">🎞️</div><div class="empty-t">공연이 없어요</div></div>`; return; }
   if(!years.includes(_calYear)) _calYear = years[0];
 
+  // 해당 연도 공연 매핑 (하루 여러 개 지원)
   const evMap = {};
   allEvents.filter(e=>new Date(e.date).getFullYear()===_calYear).forEach(e=>{
     const d = new Date(e.date);
     const key = `${d.getMonth()+1}_${d.getDate()}`;
-    if(!evMap[key]) evMap[key] = e;
+    if(!evMap[key]) evMap[key] = [];
+    evMap[key].push(e);
   });
 
   const MONTHS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
-  const DOWS_SHORT = ['M','T','W','T','F','S','S'];
+  const MONO = "font-family:'SF Mono',ui-monospace,monospace";
 
   function daysInMonth(m){ return new Date(_calYear,m,0).getDate(); }
   function firstDow(m){ const d=new Date(_calYear,m-1,1).getDay(); return d===0?6:d-1; }
@@ -713,41 +715,50 @@ function renderArchive(){
   const dims = Array.from({length:12},(_,i)=>daysInMonth(i+1));
   const maxRows = Math.max(...Array.from({length:12},(_,i)=>fds[i]+dims[i]));
 
-  const MONO = "font-family:'SF Mono',ui-monospace,monospace";
+  const D = 13; // dot size
 
-  // 핵심: 각 행의 요일은 그 행에 날짜가 있는 어느 달이든 동일해야 함
-  // 각 달의 1일 요일이 다르므로, row별로 실제 요일 계산
-  // row에 해당하는 날짜들의 요일은 모두 같아야 정상
-  // 요일 = (fds[mi] + (row - fds[mi])) % 7 = row % 7... 이 아님
-  // 실제로 날짜 d가 있을 때 요일 = (fds[mi] + d - 1) % 7
+  function makeDot(evs){
+    if(!evs||!evs.length) return '';
+    const e1 = evs[0], e2 = evs[1];
+    if(evs.length===1){
+      const img = e1.image ? toImgUrl(e1.image) : null;
+      const col = getYearColorStr(new Date(e1.date).getFullYear());
+      if(img){
+        return `<div onclick="openDetail('${e1.id}')" style="width:${D}px;height:${D}px;border-radius:50%;overflow:hidden;cursor:pointer;flex-shrink:0"><img src="${img}" style="width:100%;height:100%;object-fit:cover;display:block"/></div>`;
+      }
+      return `<div onclick="openDetail('${e1.id}')" style="width:${D}px;height:${D}px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0"><span style="font-size:5.5px;font-weight:500;color:rgba(0,0,0,0.5);${MONO}">${new Date(e1.date).getDate()}</span></div>`;
+    }
+    // 2개: 반반 파이
+    const c1 = e1.image ? null : getYearColorStr(new Date(e1.date).getFullYear());
+    const c2 = e2.image ? null : getYearColorStr(new Date(e2.date).getFullYear());
+    const r = D/2;
+    const img1 = e1.image ? toImgUrl(e1.image) : null;
+    const img2 = e2.image ? toImgUrl(e2.image) : null;
+    return `<div style="width:${D}px;height:${D}px;border-radius:50%;overflow:hidden;cursor:pointer;flex-shrink:0;display:flex">
+      <div onclick="openDetail('${e1.id}')" style="width:50%;height:100%;overflow:hidden;${img1?'':'background:'+c1}">
+        ${img1?`<img src="${img1}" style="width:200%;height:100%;object-fit:cover;display:block">`:''}
+      </div>
+      <div onclick="openDetail('${e2.id}')" style="width:50%;height:100%;overflow:hidden;${img2?'':'background:'+c2}">
+        ${img2?`<img src="${img2}" style="width:200%;height:100%;object-fit:cover;object-position:right;display:block">`:''}
+      </div>
+    </div>`;
+  }
 
   let html = `<table style="border-collapse:collapse;table-layout:fixed;width:100%">`;
-  // 열 너비: DOW 14px + 12열이 나머지 균등
-  html += `<colgroup><col style="width:14px">`;
+  html += `<colgroup><col style="width:0px">`;
   for(let i=0;i<12;i++) html += `<col>`;
   html += `</colgroup>`;
 
   // 헤더
-  html += `<thead><tr><th></th>`;
+  html += `<thead><tr><th style="width:0px"></th>`;
   MONTHS.forEach((m,i)=>{
-    html += `<th style="height:18px;text-align:center;vertical-align:bottom;font-size:9px;font-weight:500;color:var(--text3);padding:0 0 3px;${i<11?'border-right:0.5px solid var(--border)':''}">${m}</th>`;
+    html += `<th style="height:16px;text-align:center;vertical-align:bottom;font-size:9px;font-weight:500;color:var(--text3);padding:0 0 3px;${i<11?'border-right:0.5px solid var(--border)':''}">${m}</th>`;
   });
   html += `</tr></thead><tbody>`;
 
   for(let row=0; row<maxRows; row++){
-    // 이 행의 요일: 첫 번째로 날짜가 있는 달 기준
-    let dowLabel = '';
-    for(let mi=0;mi<12;mi++){
-      const day = row - fds[mi] + 1;
-      if(day>=1 && day<=dims[mi]){
-        const dow = (fds[mi] + day - 1) % 7;
-        dowLabel = DOWS_SHORT[dow];
-        break;
-      }
-    }
-
     html += `<tr>`;
-    html += `<td style="width:14px;height:15px;text-align:right;padding-right:2px;font-size:6.5px;color:var(--text3);${MONO};vertical-align:middle;white-space:nowrap">${dowLabel}</td>`;
+    html += `<td style="width:0px;padding:0"></td>`;
 
     for(let mi=0; mi<12; mi++){
       const day = row - fds[mi] + 1;
@@ -760,16 +771,10 @@ function renderArchive(){
       }
 
       const key = `${mi+1}_${day}`;
-      const ev = evMap[key];
+      const evs = evMap[key];
 
-      if(ev){
-        const col = getYearColorStr(new Date(ev.date).getFullYear());
-        const img = ev.image ? toImgUrl(ev.image) : null;
-        if(img){
-          html += `<td style="${base}"><div onclick="openDetail('${ev.id}')" style="width:13px;height:13px;border-radius:50%;overflow:hidden;cursor:pointer;display:inline-block;margin:auto"><img src="${img}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/></div></td>`;
-        } else {
-          html += `<td style="${base}"><div onclick="openDetail('${ev.id}')" style="width:13px;height:13px;border-radius:50%;background:${col};display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><span style="font-size:5.5px;font-weight:500;color:rgba(0,0,0,0.5);${MONO}">${day}</span></div></td>`;
-        }
+      if(evs && evs.length){
+        html += `<td style="${base}"><div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">${makeDot(evs)}</div></td>`;
       } else {
         html += `<td style="${base}"><span style="font-size:8px;color:var(--text3);${MONO}">${day}</span></td>`;
       }
@@ -778,12 +783,12 @@ function renderArchive(){
   }
   html += `</tbody></table>`;
 
-  const yearBtns = years.map(y=>
-    `<button onclick="setCalYear(${y})" style="background:${y===_calYear?'var(--surface2)':'none'};border:none;${MONO};font-size:12px;font-weight:600;cursor:pointer;padding:2px 8px;border-radius:4px;color:${y===_calYear?'var(--text)':'var(--text3)'}">${y}</button>`
-  ).join('');
+  // 연도 드롭다운
+  const yearOpts = years.map(y=>`<option value="${y}"${y===_calYear?' selected':''}>${y}</option>`).join('');
+  const yearSel = `<select onchange="setCalYear(parseInt(this.value))" style="background:none;border:none;${MONO};font-size:13px;font-weight:600;cursor:pointer;color:var(--text);outline:none;padding:0;-webkit-appearance:none;appearance:none">${yearOpts}</select>`;
 
   el.innerHTML = `
-    <div style="padding:10px 20px 6px;display:flex;gap:4px;flex-wrap:wrap">${yearBtns}</div>
+    <div style="padding:10px 20px 6px">${yearSel}</div>
     <div style="padding:0 20px 20px">${html}</div>`;
 }
 
