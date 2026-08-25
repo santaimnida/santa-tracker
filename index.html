@@ -745,12 +745,12 @@ function renderArchive(){
   }
 
   let html = `<table style="border-collapse:collapse;table-layout:fixed;width:100%">`;
-  html += `<colgroup><col style="width:0px">`;
+  html += `<colgroup>`;
   for(let i=0;i<12;i++) html += `<col>`;
   html += `</colgroup>`;
 
   // 헤더
-  html += `<thead><tr><th style="width:0px"></th>`;
+  html += `<thead><tr>`;
   MONTHS.forEach((m,i)=>{
     html += `<th style="height:16px;text-align:center;vertical-align:bottom;font-size:9px;font-weight:500;color:var(--text3);padding:0 0 3px;${i<11?'border-right:0.5px solid var(--border)':''}">${m}</th>`;
   });
@@ -758,7 +758,6 @@ function renderArchive(){
 
   for(let row=0; row<maxRows; row++){
     html += `<tr>`;
-    html += `<td style="width:0px;padding:0"></td>`;
 
     for(let mi=0; mi<12; mi++){
       const day = row - fds[mi] + 1;
