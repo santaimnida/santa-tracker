@@ -1197,7 +1197,8 @@ function showAc(inputId, dropId, type){
   const drop=document.getElementById(dropId);
   if(!input||!drop) return;
   const q=input.value.trim().toLowerCase();
-  const list=getAcList(type).filter(v=>!q||v.toLowerCase().includes(q));
+  if(!q){ drop.classList.remove('open'); return; }
+  const list=getAcList(type).filter(v=>v.toLowerCase().includes(q));
   if(!list.length){ drop.classList.remove('open'); return; }
   drop.innerHTML=list.map(v=>
     `<div class="ac-item" onmousedown="pickAc('${inputId}','${dropId}',event)">${v}</div>`
@@ -1209,8 +1210,12 @@ function pickAc(inputId, dropId, ev){
   ev.preventDefault();
   const input=document.getElementById(inputId);
   const drop=document.getElementById(dropId);
-  if(input) input.value=ev.currentTarget.textContent;
+  const val=ev.currentTarget.textContent;
   if(drop) drop.classList.remove('open');
+  // 태그 input인 경우 addTag 호출
+  if(inputId==='fTagInput'){ addTag('f', val); return; }
+  if(inputId==='eTagInput'){ addTag('e', val); return; }
+  if(input) input.value=val;
 }
 
 function hideAc(dropId){
