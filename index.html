@@ -473,20 +473,20 @@
     </div>
     <div class="form-row-half">
       <div class="form-row">
-        <div class="form-label">티켓값</div>
-        <input class="form-input" id="fPrice" type="search" placeholder="55000" inputmode="numeric" autocomplete="new-password"/>
-      </div>
-      <div class="form-row">
         <div class="form-label">티켓처</div>
         <div class="ac-wrap">
-          <input class="form-input" id="fTicket" type="search" placeholder="" oninput="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="new-password"/>
+          <input class="form-input" id="fTicket" type="text" name="search_ticket_x7k" placeholder="" oninput="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
           <div class="ac-dropdown" id="fTicketDrop"></div>
         </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">티켓값</div>
+        <input class="form-input" id="fPrice" type="text" name="search_price_q9z" inputmode="numeric" placeholder="55000" inputmode="numeric" autocomplete="off"/>
       </div>
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL</div>
-      <input class="form-input" id="fImage" type="text" placeholder="https://..." autocomplete="new-password" onfocus="saveFormVals()" onblur="restoreFormVals('f')"/>
+      <input type="text" name="url" style="display:none" tabindex="-1" autocomplete="url"/><input class="form-input" id="fImage" type="text" name="fimage_z3m" placeholder="https://..." autocomplete="new-password" onfocus="saveFormVals()" onblur="restoreFormVals('f')"/>
     </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
@@ -530,7 +530,7 @@
     <div class="form-row-half">
       <div class="form-row">
         <div class="form-label">티켓값</div>
-        <input class="form-input" id="ePrice" type="search" placeholder="55000" inputmode="numeric" autocomplete="new-password"/>
+        <input class="form-input" id="ePrice" type="text" name="search_eprice_q9z" inputmode="numeric" placeholder="55000" inputmode="numeric" autocomplete="off"/>
       </div>
       <div class="form-row">
         <div class="form-label">티켓처</div>
@@ -542,7 +542,7 @@
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL</div>
-      <input class="form-input" id="eImage" type="text" placeholder="https://..." autocomplete="new-password" onfocus="saveFormVals()" onblur="restoreFormVals('e')"/>
+      <input type="text" name="url" style="display:none" tabindex="-1" autocomplete="url"/><input class="form-input" id="eImage" type="text" name="eimage_z3m" placeholder="https://..." autocomplete="new-password" onfocus="saveFormVals()" onblur="restoreFormVals('e')"/>
     </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
   </div>
@@ -1075,9 +1075,8 @@ function openAdd(){
   document.getElementById('fTitle').value='';
   document.getElementById('fTime').value='';
   document.getElementById('fVenue').value='';
-  document.getElementById('fPrice').value='';
-  document.getElementById('fTicket').value='';
-  document.getElementById('fImage').value='';
+  makeDynamicFields('f',{ticket:'',price:'',image:''});
+
   document.getElementById('overlay').classList.add('open');
   setTimeout(()=>document.getElementById('fTagInput').focus(),300);
 }
@@ -1343,6 +1342,45 @@ function getTagsValue(prefix){
 function setTagsValue(prefix, value){
   _tags[prefix] = value ? value.split(',').map(v=>v.trim()).filter(Boolean) : [];
   renderTags(prefix);
+}
+
+/* ── dynamic fields (autocomplete 완전 차단) ── */
+function makeDynamicFields(prefix, vals){
+  vals = vals||{ticket:'',price:'',image:''};
+  const uid = Date.now(); // 매번 다른 id로 브라우저 기록 매핑 방지
+  const el = document.getElementById(prefix+'DynamicFields');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="form-row-half">
+      <div class="form-row">
+        <div class="form-label">티켓처</div>
+        <div class="ac-wrap" style="position:relative">
+          <input class="form-input" id="${prefix}Ticket"
+            name="${prefix}_tkt_${uid}"
+            type="text" autocomplete="off"
+            placeholder=""
+            oninput="showAc('${prefix}Ticket','${prefix}TicketDrop','ticket')"
+            onblur="hideAc('${prefix}TicketDrop')"/>
+          <div class="ac-dropdown" id="${prefix}TicketDrop"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">티켓값</div>
+        <input class="form-input" id="${prefix}Price"
+          name="${prefix}_prc_${uid}"
+          type="text" inputmode="numeric" autocomplete="off" placeholder="55000"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">포스터 URL</div>
+      <input class="form-input" id="${prefix}Image"
+        name="${prefix}_img_${uid}"
+        type="text" autocomplete="off" placeholder="https://..."/>
+    </div>`;
+  // 값 설정
+  document.getElementById(prefix+'Ticket').value = vals.ticket||'';
+  document.getElementById(prefix+'Price').value  = vals.price!=null&&vals.price!==''?vals.price:'';
+  document.getElementById(prefix+'Image').value  = vals.image||'';
 }
 
 /* ── form value protection ── */
