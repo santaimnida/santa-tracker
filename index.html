@@ -474,19 +474,19 @@
     <div class="form-row-half">
       <div class="form-row">
         <div class="form-label">티켓값</div>
-        <input class="form-input" id="fPrice" type="text" placeholder="55000" inputmode="numeric"/>
+        <input class="form-input" id="fPrice" type="search" placeholder="55000" inputmode="numeric" autocomplete="off"/>
       </div>
       <div class="form-row">
         <div class="form-label">티켓처</div>
         <div class="ac-wrap">
-          <input class="form-input" id="fTicket" placeholder="" oninput="showAc('fTicket','fTicketDrop','ticket')" onfocus="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
+          <input class="form-input" id="fTicket" type="search" placeholder="" oninput="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
           <div class="ac-dropdown" id="fTicketDrop"></div>
         </div>
       </div>
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL</div>
-      <input class="form-input" id="fImage" placeholder="https://..." autocomplete="off"/>
+      <input class="form-input" id="fImage" type="search" placeholder="https://..." autocomplete="off" onfocus="saveFormVals()" onblur="restoreFormVals('f')"/>
     </div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
@@ -530,7 +530,7 @@
     <div class="form-row-half">
       <div class="form-row">
         <div class="form-label">티켓값</div>
-        <input class="form-input" id="ePrice" type="text" placeholder="55000" inputmode="numeric"/>
+        <input class="form-input" id="ePrice" type="search" placeholder="55000" inputmode="numeric" autocomplete="off"/>
       </div>
       <div class="form-row">
         <div class="form-label">티켓처</div>
@@ -542,7 +542,7 @@
     </div>
     <div class="form-row">
       <div class="form-label">포스터 URL</div>
-      <input class="form-input" id="eImage" placeholder="https://..." autocomplete="off"/>
+      <input class="form-input" id="eImage" type="search" placeholder="https://..." autocomplete="off" onfocus="saveFormVals()" onblur="restoreFormVals('e')"/>
     </div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
   </div>
@@ -728,6 +728,10 @@ function renderArchive(){
   const dims = Array.from({length:12},(_,i)=>daysInMonth(i+1));
   const maxRows = Math.max(...Array.from({length:12},(_,i)=>fds[i]+dims[i]));
 
+  // 연도 드롭다운 (헤더보다 먼저 선언)
+  const yearOpts = years.map(y=>`<option value="${y}"${y===_calYear?' selected':''}>${y}</option>`).join('');
+  const yearSel = `<select onchange="setCalYear(parseInt(this.value))" style="background:none;border:none;${MONO};font-size:13px;font-weight:700;cursor:pointer;color:var(--text);outline:none;padding:0;margin:0;-webkit-appearance:none;appearance:none">${yearOpts}</select>`;
+
   const D = 13; // dot size
 
   function makeDot(evs){
@@ -766,7 +770,7 @@ function renderArchive(){
   html += `<thead><tr>`;
   MONTHS.forEach((m,i)=>{
     const isFirst = i===0;
-    html += `<th style="height:28px;text-align:center;vertical-align:bottom;font-size:9px;font-weight:500;color:var(--text3);padding:0 0 3px;${i<11?'border-right:0.5px solid var(--border)':''}">${isFirst?`<select onchange="setCalYear(parseInt(this.value))" style="background:none;border:none;${MONO};font-size:13px;font-weight:700;cursor:pointer;color:var(--text);outline:none;padding:0;margin:0;-webkit-appearance:none;appearance:none;display:block;width:100%;text-align:center">${yearOpts}</select>`:''}${m}</th>`;
+    html += `<th style="height:28px;text-align:center;vertical-align:bottom;font-size:9px;font-weight:500;color:var(--text3);padding:0 0 3px;${i<11?'border-right:0.5px solid var(--border)':''}">${isFirst?yearSel:''}${m}</th>`;
   });
   html += `</tr></thead><tbody>`;
 
@@ -796,12 +800,7 @@ function renderArchive(){
   }
   html += `</tbody></table>`;
 
-  // 연도 드롭다운
-  const yearOpts = years.map(y=>`<option value="${y}"${y===_calYear?' selected':''}>${y}</option>`).join('');
-  const yearSel = `<select onchange="setCalYear(parseInt(this.value))" style="background:none;border:none;${MONO};font-size:13px;font-weight:600;cursor:pointer;color:var(--text);outline:none;padding:0;margin:0;-webkit-appearance:none;appearance:none">${yearOpts}</select>`;
-
-  el.innerHTML = `
-    <div style="padding:0 20px 20px">${html}</div>`;
+  el.innerHTML = `<div style="padding:0 20px 20px">${html}</div>`;
 }
 
 
@@ -1091,7 +1090,8 @@ async function submitAdd(){
   const time  =document.getElementById('fTime').value;
   const venue =document.getElementById('fVenue').value.trim();
   const price =document.getElementById('fPrice').value.replace(/[^0-9]/g,'');
-  const ticket=document.getElementById('fTicket').value.trim();
+  let ticket=document.getElementById('fTicket').value.trim();
+  if(ticket.startsWith('http')) ticket='';
   const image=document.getElementById('fImage').value.trim();
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fTagInput').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
@@ -1144,7 +1144,8 @@ function submitEdit(){
   const time  =document.getElementById('eTime').value;
   const venue =document.getElementById('eVenue').value.trim();
   const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
-  const ticket=document.getElementById('eTicket').value.trim();
+  let ticket=document.getElementById('eTicket').value.trim();
+  if(ticket.startsWith('http')) ticket='';
   const image=document.getElementById('eImage').value.trim();
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('eTagInput').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');return;}
@@ -1314,6 +1315,29 @@ function getTagsValue(prefix){
 function setTagsValue(prefix, value){
   _tags[prefix] = value ? value.split(',').map(v=>v.trim()).filter(Boolean) : [];
   renderTags(prefix);
+}
+
+/* ── form value protection ── */
+let _savedVals = {};
+function saveFormVals(){
+  ['fPrice','fTicket','ePrice','eTicket'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) _savedVals[id] = el.value;
+  });
+}
+function restoreFormVals(prefix){
+  const priceId = prefix+'Price';
+  const ticketId = prefix+'Ticket';
+  const priceEl = document.getElementById(priceId);
+  const ticketEl = document.getElementById(ticketId);
+  // 이미지 포커스 후 값이 바뀌었으면 복구
+  if(priceEl && _savedVals[priceId]!==undefined && priceEl.value==='' && _savedVals[priceId]!==''){
+    priceEl.value = _savedVals[priceId];
+  }
+  if(ticketEl && _savedVals[ticketId]!==undefined && ticketEl.value==='' && _savedVals[ticketId]!==''){
+    ticketEl.value = _savedVals[ticketId];
+  }
+  _savedVals = {};
 }
 
 /* ── auto date format ── */
