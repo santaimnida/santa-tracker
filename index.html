@@ -1090,9 +1090,24 @@ async function submitAdd(){
   const time  =document.getElementById('fTime').value;
   const venue =document.getElementById('fVenue').value.trim();
   const price =document.getElementById('fPrice').value.replace(/[^0-9]/g,'');
-  let ticket=document.getElementById('fTicket').value.trim();
-  if(ticket.startsWith('http')) ticket='';
-  const image=document.getElementById('fImage').value.trim();
+
+  // 브라우저 자동완성 오염 방지: ticket에 URL 있으면 제거, image가 비면 ticket에서 찾기
+  const rawTicket = document.getElementById('fTicket').value.trim();
+  const rawImage  = document.getElementById('fImage').value.trim();
+
+  let ticket, image;
+  if(rawImage.startsWith('http') && rawTicket.startsWith('http') && rawImage===rawTicket){
+    // ticket과 image가 같은 URL → image가 ticket 자리에 들어간 케이스
+    ticket = '';
+    image  = rawImage;
+  } else if(rawTicket.startsWith('http') && !rawImage){
+    // ticket에 URL이 있고 image가 비어있음 → 서로 바뀐 케이스
+    ticket = '';
+    image  = rawTicket;
+  } else {
+    ticket = rawTicket.startsWith('http') ? '' : rawTicket;
+    image  = rawImage;
+  }
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('fTagInput').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');document.getElementById('fTitle').focus();return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
@@ -1144,9 +1159,17 @@ function submitEdit(){
   const time  =document.getElementById('eTime').value;
   const venue =document.getElementById('eVenue').value.trim();
   const price =document.getElementById('ePrice').value.replace(/[^0-9]/g,'');
-  let ticket=document.getElementById('eTicket').value.trim();
-  if(ticket.startsWith('http')) ticket='';
-  const image=document.getElementById('eImage').value.trim();
+  const rawTicketE = document.getElementById('eTicket').value.trim();
+  const rawImageE  = document.getElementById('eImage').value.trim();
+  let ticket, image;
+  if(rawImageE.startsWith('http') && rawTicketE.startsWith('http') && rawImageE===rawTicketE){
+    ticket=''; image=rawImageE;
+  } else if(rawTicketE.startsWith('http') && !rawImageE){
+    ticket=''; image=rawTicketE;
+  } else {
+    ticket=rawTicketE.startsWith('http')?'':rawTicketE;
+    image=rawImageE;
+  }
   if(!artist){toast('아티스트를 입력해주세요');document.getElementById('eTagInput').focus();return;}
   if(!title) {toast('공연명을 입력해주세요');return;}
   if(!date)  {toast('날짜를 선택해주세요');return;}
@@ -1437,7 +1460,17 @@ function saveSetlist(){
 function deleteFromDetail(){
   if(!confirm('이 공연을 삭제할까요?')) return;
   document.getElementById('detailOverlay').classList.remove('open');
-  deleteEvent(new Event('click'), _detailId);
+  // confirm 없이 직접 삭제
+  const id = _detailId;
+  const idx = allEvents.findIndex(e=>e.id===id);
+  if(idx===-1) return;
+  allEvents.splice(idx,1);
+  saveEvents(); renderAll();
+  toast('삭제됐어요');
+  try{
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'delete',event_id:id})});
+  }catch(e){}
 }
 
 function editFromDetail(){
