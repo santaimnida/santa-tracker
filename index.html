@@ -471,23 +471,7 @@
         <div class="ac-dropdown" id="fVenueDrop"></div>
       </div>
     </div>
-    <div class="form-row-half">
-      <div class="form-row">
-        <div class="form-label">티켓처</div>
-        <div class="ac-wrap">
-          <input class="form-input" id="fTicket" type="text" name="search_ticket_x7k" placeholder="" oninput="showAc('fTicket','fTicketDrop','ticket')" onblur="hideAc('fTicketDrop')" autocomplete="off"/>
-          <div class="ac-dropdown" id="fTicketDrop"></div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-label">티켓값</div>
-        <input class="form-input" id="fPrice" type="text" name="search_price_q9z" inputmode="numeric" placeholder="55000" inputmode="numeric" autocomplete="off"/>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-label">포스터 URL</div>
-      <input type="text" name="url" style="display:none" tabindex="-1" autocomplete="url"/><input class="form-input" id="fImage" type="text" name="fimage_z3m" placeholder="https://..." autocomplete="new-password" onfocus="saveFormVals()" onblur="restoreFormVals('f')"/>
-    </div>
+    <div id="fDynamicFields"></div>
     <button class="btn-submit" onclick="submitAdd()">추가</button>
   </div>
 </div>
@@ -527,23 +511,7 @@
         <div class="ac-dropdown" id="eVenueDrop"></div>
       </div>
     </div>
-    <div class="form-row-half">
-      <div class="form-row">
-        <div class="form-label">티켓값</div>
-        <input class="form-input" id="ePrice" type="text" name="search_eprice_q9z" inputmode="numeric" placeholder="55000" inputmode="numeric" autocomplete="off"/>
-      </div>
-      <div class="form-row">
-        <div class="form-label">티켓처</div>
-        <div class="ac-wrap">
-          <input class="form-input" id="eTicket" placeholder="" oninput="showAc('eTicket','eTicketDrop','ticket')" onfocus="showAc('eTicket','eTicketDrop','ticket')" onblur="hideAc('eTicketDrop')" autocomplete="off"/>
-          <div class="ac-dropdown" id="eTicketDrop"></div>
-        </div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-label">포스터 URL</div>
-      <input type="text" name="url" style="display:none" tabindex="-1" autocomplete="url"/><input class="form-input" id="eImage" type="text" name="eimage_z3m" placeholder="https://..." autocomplete="new-password" onfocus="saveFormVals()" onblur="restoreFormVals('e')"/>
-    </div>
+    <div id="eDynamicFields"></div>
     <button class="btn-submit" onclick="submitEdit()">수정 완료</button>
   </div>
 </div>
@@ -1143,9 +1111,7 @@ function openEdit(ev,id){
   document.getElementById('eDate').value  =e.date;
   document.getElementById('eTime').value  =e.time||'';
   document.getElementById('eVenue').value =e.venue||'';
-  document.getElementById('ePrice').value =e.price!=null?e.price:'';
-  document.getElementById('eTicket').value=e.ticket||'';
-  document.getElementById('eImage').value=e.image||'';
+  makeDynamicFields('e',{ticket:e.ticket||'',price:e.price!=null?e.price:'',image:e.image||''});
   document.getElementById('editOverlay').classList.add('open');
 }
 function closeEditIfOut(ev){ if(ev.target===document.getElementById('editOverlay')) document.getElementById('editOverlay').classList.remove('open'); }
@@ -1186,8 +1152,6 @@ function submitEdit(){
 
 /* ── delete ── */
 function deleteEvent(ev,id){
-  ev.stopPropagation();
-  if(!confirm('이 공연을 삭제할까요?')) return;
   allEvents=allEvents.filter(e=>e.id!==id);
   saveEvents(); renderAll();
   toast('삭제됐어요');
@@ -1271,27 +1235,7 @@ function toImgUrl(url){
 
 /* ── year colors ── */
 // 연도별 색상 (인접 연도와 겹치지 않게)
-function getYearColor(yr){
-  const y=parseInt(yr);
-  const map={
-    2027:'#ffb9c6',
-    2026:'#a8d1f0',
-    2025:'#d4e89a',
-    2024:'#F8D4FC',
-    2023:'#ffefa6',
-    2022:'#D8E2DC',
-    2021:'#FEC5BB',
-    2020:'#DEDAF4',
-    2019:'#FFDCA9',
-    2018:'#D8F2C9',
-    2017:'#FAE1DD',
-    2016:'#EDF7CB',
-    2015:'#DED6CE',
-    2014:'#FFD2CF',
-    2013:'#E8B0C8',
-  };
-  return map[y]||'#e0e0e0';
-}
+
 
 /* ── artist tag input ── */
 const _tags = {f:[], e:[]};
