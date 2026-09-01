@@ -608,7 +608,8 @@ function getFiltered(){
 /* ── render ── */
 function renderAll(){
   if(curFilter==='stats'){ renderStats(); return; }
-  if(curFilter==='archive'){ renderArchive(); return; }  const filtered=getFiltered();
+  if(curFilter==='archive'){ renderArchive(); return; }
+  const filtered=getFiltered();
   const el=document.getElementById('mainContent');
   if(!filtered.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">🎤</div><div class="empty-t">공연이 없어요</div></div>`;
@@ -768,7 +769,8 @@ function renderArchive(){
   }
   html += `</tbody></table>`;
 
-  el.innerHTML = `<div style="padding:0 20px 20px">${html}</div>`;
+  el.innerHTML = `<div style="padding:12px 20px 8px">${yearSel}</div>
+    <div style="padding:0 20px 20px">${html}</div>`;
 }
 
 
