@@ -826,7 +826,27 @@ function renderStats(){
 
   let html=`<div class="stats-header"><div class="stats-year-tabs"><button class="stats-year-btn${allActive}" onclick="switchStatsYear('all')">전체</button><select class="stats-year-select${yearSelActive}" onchange="switchStatsYear(this.value)" style="color:${yearSelColor}"><option value="" disabled ${activeYear==='all'?'selected':''}>연도</option>${yearOpts}</select></div><div class="stats-total-inline">총 ${evs.length}회 &nbsp;·&nbsp; ${uniqueArtists.size}팀 &nbsp;·&nbsp; ${uniqueVenues.size}곳</div></div>${segHtml}`;
 
-  if(activeSeg==='artist'){
+  if(activeSeg==='yearly'){
+    const byY={};
+    past.forEach(e=>{
+      const y=new Date(e.date).getFullYear();
+      (byY[y]=byY[y]||[]).push(e);
+    });
+    const yearList=Object.keys(byY).sort((a,b)=>b-a);
+    const maxCount=Math.max(...yearList.map(y=>byY[y].length));
+    html+=`<div class="stats-list">`;
+    yearList.forEach(y=>{
+      const count=byY[y].length;
+      const pct=Math.round((count/maxCount)*100);
+      const col=getYearColor(y);
+      html+=`<div class="stats-row">
+        <div class="stats-name" style="font-weight:600">${y}</div>
+        <div class="stats-bar-wrap"><div class="stats-bar" style="width:${pct}%;background:${col}"></div></div>
+        <div class="stats-count">${count}회</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  } else if(activeSeg==='artist'){
     const counts={};
     evs.forEach(e=>{
       e.artist.split(',').map(a=>a.trim()).filter(Boolean)
