@@ -780,6 +780,8 @@ function getYearColorStr(yr){
     2017:'#FAE1DD',2016:'#EDF7CB',2015:'#DED6CE',2014:'#FFD2CF',2013:'#E8B0C8'};
   return map[parseInt(yr)]||'#e0e0e0';
 }
+function getYearColor(yr){ return getYearColorStr(yr); }
+
 
 function setCalYear(y){ _calYear=y; renderArchive(); }
 
